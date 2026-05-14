@@ -1,0 +1,50 @@
+@using Microsoft.AspNetCore.Components.Web
+
+@* ────────────────────────────────────────────────────
+    CardKpi.razor – Tarjeta KPI estilo corporativo
+    Parámetros:
+      · AccentColor   : color del borde izquierdo y del ícono  (ej. "#1E6FD9")
+      · IconBg        : fondo suave del badge de ícono         (ej. "rgba(30,111,217,.10)")
+      · Icon          : ícono MudBlazor                        (ej. Icons.Material.Filled.Star)
+      · Label         : etiqueta superior en mayúsc.           (ej. "Total")
+      · Value         : valor principal a mostrar              (ej. "42")
+      · Subtitle      : texto secundario inferior              (ej. "Aseguradoras registradas")
+──────────────────────────────────────────────────── *@
+
+<div class="kpi-card-corp"
+     style="--kpi-accent: @AccentColor; --kpi-icon-bg: @IconBg;"
+     @onmouseenter="OnMouseEnter"
+     @onmouseleave="OnMouseLeave">
+
+    @* ── Badge de ícono ── *@
+    <div class="kpi-icon-badge">
+        <MudIcon Icon="@Icon" Style="color: var(--kpi-accent); font-size:22px;" />
+    </div>
+
+    @* ── Textos ── *@
+    <div class="kpi-body">
+        <span class="kpi-label">@Label</span>
+        <span class="kpi-value">@Value</span>
+        <span class="kpi-subtitle">@Subtitle</span>
+    </div>
+
+    @* ── Indicador de tendencia (decorativo) ── *@
+    <div class="kpi-accent-bar"></div>
+
+</div>
+
+@code {
+
+    [Parameter, EditorRequired] public string AccentColor { get; set; } = "#1E6FD9";
+    [Parameter, EditorRequired] public string IconBg      { get; set; } = "rgba(30,111,217,.10)";
+    [Parameter, EditorRequired] public string Icon        { get; set; } = Icons.Material.Filled.Info;
+    [Parameter, EditorRequired] public string Label       { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Value       { get; set; } = "0";
+    [Parameter, EditorRequired] public string Subtitle    { get; set; } = string.Empty;
+
+    // ── Micro-interacción hover ──────────────────────────────────────────────
+    private void OnMouseEnter(MouseEventArgs _) => _isHovered = true;
+    private void OnMouseLeave(MouseEventArgs _) => _isHovered = false;
+    private bool _isHovered;
+
+}

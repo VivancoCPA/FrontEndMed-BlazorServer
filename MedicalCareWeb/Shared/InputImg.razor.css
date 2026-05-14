@@ -1,0 +1,145 @@
+/* ══════════════════════════════════════════════
+   InputImg  –  Logo Upload Zone
+   ══════════════════════════════════════════════ */
+
+.iimg-upload-zone {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    border-radius: 16px;
+    border: 2px dashed var(--mud-palette-divider);
+    background: var(--mud-palette-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    flex-shrink: 0;
+    transition:
+        border-color .25s ease,
+        box-shadow   .25s ease,
+        background   .25s ease;
+}
+
+.iimg-upload-zone:hover {
+    border-color: var(--mud-palette-primary);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--mud-palette-primary) 12%, transparent);
+}
+
+/* Drag-over state */
+.iimg-upload-zone.iimg-dragging {
+    border-color: var(--mud-palette-primary);
+    border-style: solid;
+    background: color-mix(in srgb, var(--mud-palette-primary) 8%, var(--mud-palette-surface));
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--mud-palette-primary) 20%, transparent);
+    transform: scale(1.03);
+}
+
+/* File loaded state: border solid */
+.iimg-upload-zone.iimg-has-file {
+    border-style: solid;
+    border-color: color-mix(in srgb, var(--mud-palette-primary) 50%, transparent);
+}
+
+/* ── Image wrap ── */
+.iimg-img-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.iimg-preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 6px;
+    border-radius: 14px;
+}
+
+/* Hover overlay on image */
+.iimg-overlay {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, #000 50%, transparent);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    opacity: 0;
+    transition: opacity .2s ease;
+}
+
+.iimg-upload-zone:hover .iimg-overlay {
+    opacity: 1;
+}
+
+.iimg-overlay-icon {
+    font-size: 18px;
+    color: #fff;
+    line-height: 1;
+}
+
+.iimg-overlay-text {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+
+/* ── Empty state ── */
+.iimg-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px;
+    text-align: center;
+    pointer-events: none;
+}
+
+.iimg-empty-icon {
+    color: var(--mud-palette-text-disabled);
+    transition: color .2s ease, transform .2s ease;
+}
+
+.iimg-upload-zone:hover .iimg-empty-icon {
+    color: var(--mud-palette-primary);
+    transform: scale(1.1) translateY(-1px);
+}
+
+.iimg-empty-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--mud-palette-text-secondary);
+    letter-spacing: .3px;
+    line-height: 1.2;
+}
+
+.iimg-empty-hint {
+    font-size: 9.5px;
+    color: var(--mud-palette-text-disabled);
+    letter-spacing: .4px;
+    text-transform: uppercase;
+}
+
+/* ── Reveal animation ── */
+@keyframes iimgReveal {
+    from {
+        opacity: 0;
+        transform: scale(.88);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.iimg-reveal {
+    animation: iimgReveal .3s cubic-bezier(.34,1.56,.64,1) forwards;
+}

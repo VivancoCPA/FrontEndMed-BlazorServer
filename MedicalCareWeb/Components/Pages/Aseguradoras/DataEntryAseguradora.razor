@@ -1,0 +1,231 @@
+﻿@using MedicalCareWeb.Models.Aseguradora
+
+@inject IAseguradoraService AseguradoraServicio
+
+<MudForm @ref="_form" Model="@modelo">
+    <div class="dea-shell">
+         @* ── Sección: Logo ───────────────────────────────── *@
+        <div class="dea-logo-section">
+            <InputImg Label="Logo"
+                      ImagenSeleccionada="archivo => modelo.FotoArchivo = archivo"
+                      ImagenURL="@modelo.LogoUrl" />
+
+            <div class="dea-logo-meta">
+                <span class="dea-logo-title">Logotipo</span>
+                <span class="dea-logo-desc">Haz clic en el área para seleccionar un archivo PNG, JPG o SVG. La imagen se guardará al registrar.</span>
+            </div>
+        </div>
+        @* ── Separador de sección ────────────────────────── *@
+        <div class="dea-section-label px-4">
+            <MudIcon Icon="@Icons.Material.Outlined.Business"
+                     Style="font-size:14px; color:var(--mud-palette-primary);" />
+            Información General
+        </div>
+        @* ── Fila 1: Nombre (full-width) ────────────────── *@
+        <MudGrid Spacing="2" Class="px-4">
+            <MudItem xs="12">
+                <MudTextField T="string"
+                              Label="Nombre de la Aseguradora"
+                              @bind-Value="modelo.Name"
+                              Required="true"
+                              RequiredError="El nombre es obligatorio"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Outlined.BusinessCenter"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              FullWidth="true" />
+            </MudItem>
+
+            @* ── Fila 2: Teléfono | Email ────────────────── *@
+            <MudItem xs="12" sm="5">
+                <MudTextField T="string"
+                              Label="Teléfono"
+                              @bind-Value="modelo.Phone"
+                              Required="true"
+                              RequiredError="El teléfono es obligatorio"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Outlined.Phone"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              FullWidth="true"
+                              InputType="InputType.Telephone" />
+            </MudItem>
+
+            <MudItem xs="12" sm="7">
+                <MudTextField T="string"
+                              Label="Correo electrónico"
+                              @bind-Value="modelo.Email"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Outlined.Email"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              FullWidth="true"
+                              InputType="InputType.Email" />
+            </MudItem>
+
+            @* ── Fila 3: Dirección (full-width) ─────────── *@
+            <MudItem xs="12">
+                <MudTextField T="string"
+                              Label="Dirección"
+                              @bind-Value="modelo.Address"
+                              Required="true"
+                              RequiredError="La dirección es obligatoria"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Outlined.LocationOn"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              FullWidth="true"
+                              Lines="2" />
+            </MudItem>
+        </MudGrid>
+
+        @* ── Separador de sección ────────────────────────── *@
+        <div class="dea-section-label px-4" style="margin-top:16px;">
+            <MudIcon Icon="@Icons.Material.Outlined.Person"
+                     Style="font-size:12px; color:var(--mud-palette-primary);" />
+            Contacto y Estado
+        </div>
+        <MudGrid Spacing="2" Class="px-4">
+            @* ── Persona de contacto ─────────────────────── *@
+            <MudItem xs="12" sm="9">
+                <MudTextField T="string"
+                              Label="Persona de Contacto"
+                              @bind-Value="modelo.PersonInCharge"
+                              Required="true"
+                              RequiredError="La persona de contacto es obligatoria"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Outlined.Badge"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              FullWidth="true" />
+            </MudItem>
+
+            @* ── Estado ──────────────────────────────────── *@
+            <MudItem xs="12" sm="3" Class="d-flex align-center">
+                <div class="dea-status-wrap">
+                    @* <span class="dea-status-label">Estado</span> *@
+                    <div class="dea-status-pill @(modelo.IsActive ? "dea-active" : "dea-inactive")">
+                        <MudSwitch @bind-Value="modelo.IsActive"
+                                   Color="Color.Success"
+                                   UncheckedColor="Color.Error"
+                                   Size="Size.Small" />
+                        <span>@(modelo.IsActive ? "Activo" : "Inactivo")</span>
+                    </div>
+                </div>
+            </MudItem>
+        </MudGrid>
+        @* ── Acciones ────────────────────────────────────── *@
+        <div class="dea-actions pa-4">
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Default"
+                       OnClick="Cancel"
+                       Style="font-weight:600; text-transform:none;">
+                Cancelar
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@(EsEdicion ? Icons.Material.Filled.Save : Icons.Material.Filled.AddBusiness)"
+                       OnClick="Submit"
+                       Style="font-weight:600; text-transform:none; border-radius:8px; min-width:130px;">
+                @(EsEdicion ? "Actualizar" : "Registrar")
+            </MudButton>
+        </div>
+    </div>
+
+</MudForm>
+
+@code {
+    // ── Parámetros ─────────────────────────────────────────────────────────────
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+    [Parameter, EditorRequired]
+    public UpdateAseguradoraRequestDto modelo { get; set; } 
+    [Parameter] public bool EsEdicion { get; set; }
+
+    // ── Estado interno ─────────────────────────────────────────────────────────
+    private MudForm? _form;
+    
+
+    protected override void OnInitialized()
+    {
+    }
+    // ── Submit ─────────────────────────────────────────────────────────────────
+    private async Task Submit()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Por favor completa los campos obligatorios.", Severity.Warning);
+            return;
+        }
+
+        if (EsEdicion)
+            await EditSubmit();
+        else
+            await NewSubmit();
+    }
+
+    private async Task EditSubmit()
+    {
+        var request = new UpdateAseguradoraRequestDto
+        {
+            Id = modelo.Id,
+            Name = modelo.Name,
+            Address = modelo.Address,
+            Phone = modelo.Phone,
+            Email = modelo.Email,
+            PersonInCharge = modelo.PersonInCharge,
+            LogoUrl = modelo.LogoUrl//Url del logo actual, si se cambió se actualizará, si no se mantiene el mismo
+        };
+
+        var browserFile = modelo.FotoArchivo;
+        if (browserFile is not null)
+        {
+            request.Archivo = browserFile.ConvertirAArchivoDTO();
+        }
+
+        var response = await AseguradoraService.UpdateAseguradoraAsync(modelo.Id, request);
+        if (!response.Success)
+        {
+            Snackbar.Add($"Error: {response.ErrorMessage}", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add($"Aseguradora \"{modelo.Name}\" actualizada.", Severity.Success);
+            MudDialog?.Close(DialogResult.Ok(true));
+        }
+    }
+
+    private async Task NewSubmit()
+    {
+        
+        var request = new CreateAseguradoraRequestDto
+        {
+            Name = modelo.Name,
+            Address = modelo.Address,
+            Phone = modelo.Phone,
+            Email = modelo.Email,
+            PersonInCharge = modelo.PersonInCharge,
+            LogoUrl = modelo.LogoUrl,
+        };
+
+        var browserFile = modelo.FotoArchivo;
+        if (browserFile is not null)
+        {
+            request.Archivo = browserFile.ConvertirAArchivoDTO();
+        }
+
+        var response = await AseguradoraServicio.CreateAseguradoraAsync(request);
+        if (!response.Success)
+        {
+            Snackbar.Add($"Error: {response.ErrorMessage}", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add($"Aseguradora \"{modelo.Name}\" registrada correctamente.", Severity.Success);
+            MudDialog?.Close(DialogResult.Ok(true));
+        }
+    }
+
+    private void Cancel() => MudDialog?.Cancel();
+}

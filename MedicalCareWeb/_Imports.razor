@@ -1,0 +1,22 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using MedicalCarweb.Contracts
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@using MudBlazor
+@using MudBlazor.Services
+@using MedicalCareWeb.Common
+@using MedicalCareWeb.Shared
+@using MedicalCareWeb
+@using MedicalCareWeb.Components
+@using MedicalCareWeb.Components.Layout
+
+
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+@inject IAseguradoraService AseguradoraService

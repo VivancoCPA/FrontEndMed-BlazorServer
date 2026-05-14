@@ -1,0 +1,15 @@
+﻿using Microsoft.AspNetCore.Components.Forms;
+
+namespace MedicalCareWeb.Common
+{
+    public static class ArchivosExtensions
+    {
+        public static ArchivoDTO ConvertirAArchivoDTO(this IBrowserFile browserFile)
+        {
+            var limite = 2 * 1024 * 1024;// 2MB
+            var archivo = new ArchivoDTO(browserFile.Name, browserFile.ContentType,
+                () => browserFile.OpenReadStream(limite));
+            return archivo;
+        }
+    }
+}

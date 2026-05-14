@@ -1,0 +1,462 @@
+﻿@page "/aseguradoras"
+
+@using MedicalCareWeb.Models.Aseguradora
+
+@* https://mudblazor.com/features/icons#icons *@
+
+<MudContainer Fixed="true">
+     @* ── KPI Cards ── *@
+    <div style="
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+        margin-top: 8px;">
+
+        <CardKpi AccentColor="#1E6FD9"
+                 IconBg="rgba(30,111,217,.10)"
+                 Icon="@Icons.Material.Filled.BusinessCenter"
+                 Label="Total"
+                 Value="@_total.ToString()"
+                 Subtitle="Aseguradoras registradas" />
+
+        <CardKpi AccentColor="#0E9E6E"
+                 IconBg="rgba(14,158,110,.10)"
+                 Icon="@Icons.Material.Filled.CheckCircle"
+                 Label="Activos"
+                 Value="@_activos.ToString()"
+                 Subtitle="En operación" />
+
+        <CardKpi AccentColor="#D94F3D"
+                 IconBg="rgba(217,79,61,.10)"
+                 Icon="@Icons.Material.Filled.RemoveCircle"
+                 Label="Inactivos"
+                 Value="@_inactivos.ToString()"
+                 Subtitle="Fuera de operación" />
+
+        <CardKpi AccentColor="#C07B1A"
+                 IconBg="rgba(192,123,26,.10)"
+                 Icon="@Icons.Material.Filled.Star"
+                 Label="Más Usada"
+                 Value="@_masUsadaNombre"
+                 Subtitle="@($"{_masVisitado} usos registrados")" />
+
+    </div>
+
+    <MudDataGrid T="AseguradoraDto"
+                 Dense="true"
+                 @ref="grid"
+                 Hover="true"
+                 Elevation="3"
+                 RowsPerPage="10"
+                 Height="380px"
+                 ServerData="LoadServerData"
+                 Style="border-radius: 12px; overflow: hidden;">
+        @* ── Spinner de carga ── *@
+        <LoadingContent>
+            <div class="d-flex flex-column align-center justify-center" style="height:200px; gap:12px;">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Cargando Aseguradoras...</MudText>
+            </div>
+        </LoadingContent>
+        @* ── Barra de herramientas ── *@
+        <ToolBarContent>
+            <div class="d-flex align-center" style="gap:8px;">
+                <MudIcon Icon="@Icons.Material.Filled.HealthAndSafety"
+                         Color="Color.Primary"
+                         Size="Size.Medium" />
+                <MudText Typo="Typo.h6" Style="font-weight:700; letter-spacing:-.3px;">
+                    Aseguradoras
+                </MudText>
+            </div>
+
+            <MudSpacer />
+
+            <MudTextField T="string"
+                          Placeholder="Buscar aseguradora..."
+                          ValueChanged="OnSearchChanged"
+                          Adornment="Adornment.Start"
+                          Immediate="true"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          IconSize="Size.Small"
+                          Style="min-width:240px;"
+                          Class="mr-3" />
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.AddBusiness"
+                       Style="border-radius:8px; font-weight:600; text-transform:none; font-size:13px;"
+                       OnClick="NuevoCentro">
+                Nuevo
+            </MudButton>
+        </ToolBarContent>
+        @* ── Columnas ── *@
+        <Columns>
+
+            @* Logo *@
+            <TemplateColumn Title="Logo"
+                            HeaderStyle="@_HeaderStyle"
+                            Sortable="false"
+                            CellStyle="width:80px; text-align:center;">
+                <CellTemplate>
+                    @if (!string.IsNullOrWhiteSpace(context.Item.LogoUrl))
+                    {
+                        <MudAvatar Style="width:40px; height:40px; border:2px solid var(--mud-palette-primary-lighten);">
+                            <MudImage Src="@context.Item.LogoUrl"
+                                      Alt="@context.Item.Name"
+                                      ObjectFit="ObjectFit.Cover"
+                                      Width="40"
+                                      Height="40" />
+                        </MudAvatar>
+                    }
+                    else
+                    {
+                        <MudAvatar Color="Color.Primary"
+                                   Style="width:40px; height:40px; font-size:14px; font-weight:700;">
+                            @(context.Item.Name.Length > 0 ? context.Item.Name[0].ToString().ToUpper() : "?")
+                        </MudAvatar>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+
+            @* Nombre *@
+            <PropertyColumn Property="x => x.Name"
+                            HeaderStyle="@_HeaderStyle"
+                            Title="Nombre"
+                            Sortable="true">
+                <CellTemplate>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">
+                        @context.Item.Name
+                    </MudText>
+                </CellTemplate>
+            </PropertyColumn>
+
+            @* Dirección *@
+            <PropertyColumn Property="x => x.Address"
+                            HeaderStyle="@_HeaderStyle"
+                            Title="Dirección"
+                            Sortable="false">
+                <CellTemplate>
+                    <div class="d-flex align-center" style="gap:4px;">
+                        <MudIcon Icon="@Icons.Material.Outlined.LocationOn"
+                                 Size="Size.Small"
+                                 Color="Color.Info" />
+                        <MudText Typo="Typo.body2">@context.Item.Address</MudText>
+                    </div>
+                </CellTemplate>
+            </PropertyColumn>
+
+            @* Teléfono *@
+            <PropertyColumn Property="x => x.Phone"
+                            HeaderStyle="@_HeaderStyle"
+                            Title="Teléfono"
+                            Sortable="false"
+                            CellStyle="width:145px;">
+                <CellTemplate>
+                    <div class="d-flex align-center" style="gap:4px;">
+                        <MudIcon Icon="@Icons.Material.Outlined.Phone"
+                                 Size="Size.Small"
+                                 Color="Color.Info" />
+                        <MudText Typo="Typo.body2">@context.Item.Phone</MudText>
+                    </div>
+                </CellTemplate>
+            </PropertyColumn>
+
+            @* Email *@
+            @* <PropertyColumn Property="x => x.Email"
+                            HeaderStyle="@_HeaderStyle"
+                            Title="Email"
+                            Sortable="false">
+                <CellTemplate>
+                    <div class="d-flex align-center" style="gap:4px;">
+                        <MudIcon Icon="@Icons.Material.Outlined.Email"
+                                 Size="Size.Small"
+                                 Color="Color.Secondary" />
+                        <MudText Typo="Typo.body2">@context.Item.Email</MudText>
+                    </div>
+                </CellTemplate>
+            </PropertyColumn> *@
+            @* Contacto *@
+            <PropertyColumn Property="x => x.PersonInCharge"
+                            HeaderStyle="@_HeaderStyle"
+                            Title="Contacto"
+                            Sortable="true">
+                <CellTemplate>
+                    <div class="d-flex align-center" style="gap:4px;">
+                        <MudIcon Icon="@Icons.Material.Outlined.EmojiPeople"
+                                 Size="Size.Small"
+                                 Color="Color.Info" />
+                        <MudText Typo="Typo.body2">@context.Item.PersonInCharge</MudText>
+                    </div>
+                </CellTemplate>
+            </PropertyColumn>
+
+            @* Estado *@
+            @* <TemplateColumn Title="Estado"
+                            HeaderStyle="@_HeaderStyle"
+                            Sortable="false"
+                            CellStyle="width:110px; text-align:center;">
+                <CellTemplate>
+                    <MudChip T="string"
+                             Color="@(context.Item.IsActive ? Color.Success : Color.Error)"
+                             Size="Size.Small"
+                             Style="font-weight:600; border-radius:6px; font-size:11px; min-width:72px;">
+                        @(context.Item.IsActive ? "Activo" : "Inactivo")
+                    </MudChip>
+                </CellTemplate>
+            </TemplateColumn> *@
+
+            @* Acciones *@
+            <TemplateColumn Title="Acciones"
+                            HeaderStyle="@_HeaderStyle"
+                            Sortable="false"
+                            CellStyle="width:130px;">
+                <CellTemplate>
+                    <div class="d-flex align-center" style="gap:2px;">
+                        <MudTooltip Text="Editar">
+                            <MudIconButton Icon="@Icons.Material.Filled.EditNote"
+                                           Color="Color.Info"
+                                           Size="Size.Small"
+                                           OnClick="@(() => EditarTipo(context.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="@(context.Item.IsActive ? "Desactivar" : "Activar")">
+                            <MudSwitch T="bool"
+                                       Value="context.Item.IsActive"
+                                       Color="Color.Success"
+                                       UncheckedColor="Color.Error"
+                                       Size="Size.Small"
+                                       ValueChanged="@(async v => await Desactivar(context.Item))" />
+                        </MudTooltip>
+                        <MudChip T="string"
+                                 Color="@(context.Item.IsActive ? Color.Success : Color.Error)"
+                                 Size="Size.Small"
+                                 Variant="Variant.Text">
+                            @(context.Item.IsActive ? "Activo" : "Inactivo")
+                        </MudChip>
+                    </div>
+                </CellTemplate>
+            </TemplateColumn>
+
+        </Columns>
+
+        @* ── Paginador ── *@
+        <PagerContent>
+            <MudDataGridPager T="AseguradoraDto"
+                              ShowPageSizeSelector="true"
+                              PageSizeOptions="new int[] { 5, 10, 20, 50 }" />
+        </PagerContent>
+    </MudDataGrid> 
+</MudContainer>
+
+@code {
+    // ── KPI variables ──────────────────────────────────────────────────────────
+    private int _total = 0;          // Total de aseguradoras registradas
+    private int _activos = 0;          // Aseguradoras con IsActive = true
+    private int _inactivos = 0;          // Aseguradoras con IsActive = false
+    private int _masVisitado = 0;          // Cantidad de usos de la más frecuente
+    private string _masUsadaNombre = "—";      // Nombre de la aseguradora más usada
+    // ──────────────────────────────────────────────────────────────────────────
+    private string? _searchString;
+    private int? _lastPage;
+    private int? _lastPageSize;
+    private string? _lastSearch;
+    private string? _lastColSort;
+    private bool? _lastOrderSort;
+    private string _HeaderStyle = "background-color: var(--mud-palette-primary) !important; color: white !important; font-weight: bold; height: 40px;";
+    //
+    private MudDataGrid<AseguradoraDto>? grid;
+    private List<AseguradoraDto> Especialidades = new();
+    private CancellationTokenSource? _cts;
+
+    private async void NuevoCentro()
+    {
+        UpdateAseguradoraRequestDto centro = new();
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            CloseButton = true,
+            FullWidth = true,
+            Position = DialogPosition.CenterRight
+        };
+
+        var parameter = new DialogParameters
+        {
+            { "modelo" , centro},
+            { "EsEdicion", false }
+        };
+        //Console.WriteLine($"Nueva Especialidad - {centro.name}");
+        var dialog = await DialogService.ShowAsync<DataEntryAseguradora>("Registrar Nueva Aseguradora", parameter, options);
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
+        {
+            // refresca tu lista de centros
+            await CargarDatos();
+
+        }
+
+    }
+    //
+    private async void EditarTipo(AseguradoraDto item)
+    {
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = true,
+            CloseButton = true,
+            FullWidth = true,
+            Position = DialogPosition.CenterRight
+        };
+
+        var parameter = new DialogParameters
+        {
+            //clonamos para no modificar el original hasta que se guarde
+            { "Modelo", new UpdateAseguradoraRequestDto
+                {
+                    Id = item.Id,
+                    Name = item.Name,
+                    Address = item.Address,
+                    Email = item.Email,
+                    Phone = item.Phone,
+                    PersonInCharge = item.PersonInCharge,
+                    LogoUrl = item.LogoUrl,
+                    IsActive = item.IsActive
+                }
+            },
+            { "EsEdicion", true }
+        };
+        //
+        var dialog = await DialogService.ShowAsync<DataEntryAseguradora>("Editar Aseguradora", parameter, options);
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
+        {
+            await CargarDatos();
+        }
+    }
+    //
+    private async Task Desactivar(AseguradoraDto tipo)
+    {
+        //Configurar el cuadro de diálogo
+        var options = new DialogOptions { CloseOnEscapeKey = true, Position = DialogPosition.TopCenter, CloseButton = true };
+        bool? result = await DialogService.ShowMessageBoxAsync(
+            @tipo.IsActive ? "Confirmar Desactivacion" : "Confirmar Activacion",
+            $"¿Estás seguro de que deseas {(tipo.IsActive ? "Desactivar" : "Activar")} Aseguradora: {tipo.Name}?",
+            yesText: @tipo.IsActive ? "Desactivar" : "Activar",
+            cancelText: "Cancelar",
+            options: options
+        );
+
+        if (result == true)
+        {
+            // Llamar a la API para eliminar el centro
+            var response = await AseguradoraService.ToggleAseguradoraAsync(tipo.Id);
+            if (!response.Success)
+            {
+                Snackbar.Add(response.ErrorMessage!, Severity.Error);
+
+            }
+            else
+            {
+                // API exitosa — confirmar el nuevo valor
+                Snackbar.Add($"Aseguradora {tipo.Name} actualizada.", Severity.Success);
+            }
+            // refresca tu lista de centros
+        }
+        await CargarDatos();
+    }
+    //
+    private async Task OnSearchChanged(string value)
+    {
+        // Lógica de búsqueda aquí
+        if (grid is null)
+            return; // 👈 evita crash
+
+        _cts?.Cancel(); // cancela llamada anterior
+        _cts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(400, _cts.Token); // ⏱ espera (ajustable)
+            //Console.WriteLine($"Search changed: {value}");
+            _searchString = value;
+            grid.NavigateTo(0); // 👈 vuelve a página 1
+            await grid.ReloadServerData(); // 🔥 dispara el filtro en backend = LoadServerData
+        }
+        catch (TaskCanceledException)
+        {
+            // normal: usuario sigue escribiendo
+        }
+    }
+    //
+    private async Task<GridData<AseguradoraDto>>
+        LoadServerData(GridState<AseguradoraDto> state, CancellationToken ct)
+    {
+        //await Task.Delay(1000);//
+
+        var sort = state.SortDefinitions.FirstOrDefault();
+
+        if (_lastPage == state.Page &&
+            _lastPageSize == state.PageSize &&
+            _lastSearch == _searchString &&
+            _lastColSort == sort?.SortBy &&
+            _lastOrderSort == sort?.Descending
+        )
+        {
+            return new GridData<AseguradoraDto>(); // evita duplicado
+        }
+        _lastPage = state.Page;
+        _lastPageSize = state.PageSize;
+        _lastSearch = _searchString;
+        _lastColSort = sort?.SortBy;
+        _lastOrderSort = sort?.Descending;
+        // ⚠️ Mud usa Page 0-based → tu API usa 1-based
+        var page = state.Page + 1;
+        var paramters = new ListedPagedDto
+            (
+             Page: page,
+             PageSize: state.PageSize,
+             Search: _searchString,
+             SortBy: sort?.SortBy,
+             SortDesc: sort?.Descending ?? false
+            );
+
+        var response = await AseguradoraService.GetAseguradoraPaged(paramters);
+
+        if (!response.Success)
+        {
+            Snackbar.Add(response.ErrorMessage!, Severity.Error);
+        }
+
+        if (response.Items is null)
+        {
+            return new GridData<AseguradoraDto>
+            {
+                Items = [],
+                TotalItems = 0
+            };
+        }
+        ;
+
+        return new GridData<AseguradoraDto>// mapea tu respuesta al formato que espera MudDataGrid
+        {
+            Items = response.Items,
+            TotalItems = response.TotalCount
+        };
+    }
+    
+    private async Task CargarDatos()
+    {
+        await InvokeAsync(async () =>
+        {
+            if (grid is not null)
+            {
+                _lastPage = null; //asegurar que se recarga para que pase la validacion inicial
+                grid.NavigateTo(0);              // sync
+                await grid.ReloadServerData();   // async
+                StateHasChanged();
+            }
+        });
+    }
+}
