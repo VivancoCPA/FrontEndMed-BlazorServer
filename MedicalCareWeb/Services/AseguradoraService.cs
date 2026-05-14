@@ -1,8 +1,6 @@
 ﻿using MedicalCareWeb.Common;
 using MedicalCareWeb.Contracts;
 using MedicalCareWeb.Models.Aseguradora;
-using MedicalCarweb.Contracts;
-
 
 namespace MedicalCareWeb.Services;
 
@@ -78,7 +76,7 @@ public class  AseguradoraService(HttpClient _http , IAlmacenadorArchivos almacen
         if (!string.IsNullOrWhiteSpace(paginacion.SortBy))
             url += $"&sortBy={paginacion.SortBy}&sortDesc={paginacion.SortDesc.ToString().ToLower()}";
 
-        Console.WriteLine(url);
+        //Console.WriteLine(url);
         var response = await _http.GetAsync(url);
         if (response.IsSuccessStatusCode)
         {

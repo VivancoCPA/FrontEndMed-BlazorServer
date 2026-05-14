@@ -1,0 +1,32 @@
+﻿@using MedicalCareWeb.Enum
+@using MedicalCareWeb.Models.Centro
+@inject ICentroService CentroServicio
+
+
+<h3>DataEntryCentro</h3>
+<h3>@Total</h3>
+
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+    [Parameter, EditorRequired]
+    public UpdateCentroRequestDto modelo { get; set; }
+    [Parameter] public bool EsEdicion { get; set; }
+
+    // ── Estado interno ─────────────────────────────────────────────────────────
+    private MudForm? _form;
+    private int Total;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        var response = await TipoCentroService.GetAllTipoCentroAsync(EnumStatus.Activo);
+
+        Total = response.Count();
+    }
+}

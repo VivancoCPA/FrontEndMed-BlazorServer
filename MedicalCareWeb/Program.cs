@@ -2,7 +2,6 @@ using MedicalCareWeb.Common;
 using MedicalCareWeb.Components;
 using MedicalCareWeb.Contracts;
 using MedicalCareWeb.Services;
-using MedicalCarweb.Contracts;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Services;
 
@@ -33,8 +32,10 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddScoped<IAseguradoraService, AseguradoraService> ();
 builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorArchivosLocal>();
+builder.Services.AddScoped<IAseguradoraService, AseguradoraService> ();
+builder.Services.AddScoped<ICentroService, CentroService>();
+builder.Services.AddScoped<ITipoCentroService, TipoCentroService>();
 
 // Add MudBlazor services
 builder.Services.AddMudServices();

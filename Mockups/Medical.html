@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Edit Medical Center Modal</title>
+<!-- Tailwind CSS CDN with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter (a common clean sans-serif matching the screenshot) -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="typography">
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f3f4f6; /* Light gray background for the page */
+    }
+  </style>
+<style data-purpose="custom-styles">
+    /* Custom background color for the right column as seen in image */
+    .bg-map-column {
+      background-color: #eff6ff;
+    }
+    /* Specific styling for the toggle switch */
+    .toggle-checkbox:checked {
+      right: 0;
+      border-color: #4ade80;
+    }
+    .toggle-checkbox:checked + .toggle-label {
+      background-color: #4ade80;
+    }
+    /* Rounded corners for inputs */
+    .input-field {
+      border-radius: 0.5rem;
+      border-color: #d1d5db;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+<!-- BEGIN: ModalContainer -->
+<div class="w-full max-w-4xl bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200" data-purpose="modal-container">
+<!-- BEGIN: ModalHeader -->
+<header class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+<h1 class="text-xl font-semibold text-gray-800">Edit Medical Center</h1>
+<button class="text-gray-400 hover:text-gray-600 transition-colors" type="button">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</header>
+<!-- END: ModalHeader -->
+<!-- BEGIN: ModalBody -->
+<main class="grid grid-cols-1 md:grid-cols-2">
+<!-- Left Column: Details -->
+<section class="p-8 space-y-6" data-purpose="details-column">
+<!-- Center Name -->
+<div class="space-y-1.5">
+<label class="block text-sm font-medium text-gray-700">Center Name</label>
+<input class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 focus:ring-blue-500 focus:border-blue-500" type="text" value="Hospital Nacional Edgardo Rebagliati Martins"/>
+</div>
+<!-- Category -->
+<div class="space-y-1.5">
+<label class="block text-sm font-medium text-gray-700">Category</label>
+<div class="relative">
+<select class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 appearance-none bg-white focus:ring-blue-500 focus:border-blue-500">
+<option selected="">Public Hospital</option>
+<option>Private Clinic</option>
+<option>Emergency Care</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+<svg class="h-5 w-5 text-gray-400" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" fill-rule="evenodd"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Phone Number -->
+<div class="space-y-1.5">
+<label class="block text-sm font-medium text-gray-700">Phone Number</label>
+<input class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 focus:ring-blue-500 focus:border-blue-500" type="text" value="+511 265 4901"/>
+</div>
+<!-- Active Toggle -->
+<div class="space-y-1.5">
+<span class="block text-sm font-medium text-gray-700">Active</span>
+<div class="flex items-center">
+<label class="inline-flex relative items-center cursor-pointer" for="active-toggle">
+<input checked="" class="sr-only peer" id="active-toggle" type="checkbox"/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Right Column: Location -->
+<section class="bg-map-column p-8 border-l border-gray-100 space-y-6" data-purpose="location-column">
+<!-- Address Search -->
+<div class="space-y-1.5">
+<label class="block text-sm font-medium text-gray-700">Address Search</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<input class="block w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 bg-white focus:ring-blue-500 focus:border-blue-500" type="text" value="Av. Salaverry 1250, Jesús María"/>
+</div>
+</div>
+<!-- Coordinates -->
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="block text-sm font-medium text-gray-700">Latitude</label>
+<input class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 bg-white focus:ring-blue-500 focus:border-blue-500" type="text" value="-12.07684"/>
+</div>
+<div class="space-y-1.5">
+<label class="block text-sm font-medium text-gray-700">Longitude</label>
+<input class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 bg-white focus:ring-blue-500 focus:border-blue-500" type="text" value="-77.04095"/>
+</div>
+</div>
+<!-- Map Container -->
+<div class="w-full h-52 rounded-lg border border-gray-300 overflow-hidden relative shadow-sm">
+<img alt="Map Location" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGyB7T3oqfH59VJaOnr4qJ1BKaiuQDnLtfW2MH5psr9WyumJDbkGtxFT6nfZt4_jTr0PHnMzTTlJ4syvqDUOrsojAxMtWSfTCxi0TqPyEOGY2vP3JlXMh7bLoS5NU-rCAnsh_a4Kb7twQEqqpczFnJCWJhCj6djZrUUhEvH5thVQE2AdMRT7VlDb6aAuLu1uOXSWyvRdbOtTJ8suuJ1V8ApaRvaE2ng8zLaW5X4jlaSeU8T5sioZz8sahkrCtZaBaYaxqDyaoxjG-n"/>
+<!-- Mock Map Marker overlay -->
+
+<!-- Zoom Controls Mockup -->
+
+</div>
+</section>
+</main>
+<!-- END: ModalBody -->
+<!-- BEGIN: ModalFooter -->
+<footer class="flex items-center justify-end px-6 py-4 border-t border-gray-100 bg-gray-50/50 space-x-3">
+<button class="px-8 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" type="button">
+        Cancel
+      </button>
+<button class="px-10 py-2 text-sm font-medium text-white bg-blue-400 hover:bg-blue-500 rounded-lg shadow-sm transition-colors" type="button">
+        Save
+      </button>
+</footer>
+<!-- END: ModalFooter -->
+</div>
+<!-- END: ModalContainer -->
+</body></html>
