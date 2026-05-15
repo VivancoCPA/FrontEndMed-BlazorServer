@@ -12,8 +12,8 @@ namespace MedicalCareWeb.Models.Centro
         public string Address { get; set; } = string.Empty;
         public string? Phone { get; set; }
         public bool IsActive { get; set; } = true;
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
+        public double? Latitude { get; set; } = null!;
+        public double? Longitude { get; set; } = null!;
 
     }
 }

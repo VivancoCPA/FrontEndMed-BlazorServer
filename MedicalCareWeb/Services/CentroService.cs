@@ -7,9 +7,14 @@ namespace MedicalCareWeb.Services;
 
 public class CentroService(HttpClient _http) : ICentroService
 {
-    public Task<ApiResponse<bool>> CreateCentroAsync(CreateCentroRequestDto request)
+    public async Task<ApiResponse<bool>> CreateCentroAsync(CreateCentroRequestDto request)
     {
-        throw new NotImplementedException();
+        var response = await _http.PostAsJsonAsync("medical-centers", request);
+        if (response.IsSuccessStatusCode)
+            return new ApiResponse<bool>(true, true, string.Empty);
+
+        var error = await Helper.LeerErrorAsync(response);
+        return new ApiResponse<bool>(false, false, error);
     }
 
     public Task<IEnumerable<CentroDto>> GetAllCentrosAsync()
@@ -68,8 +73,15 @@ public class CentroService(HttpClient _http) : ICentroService
         };
     }
 
-    public Task<ApiResponse<bool>> UpdateCentroAsync(Guid id, UpdateCentroRequestDto request)
+    public async Task<ApiResponse<bool>> UpdateCentroAsync(Guid id, UpdateCentroRequestDto request)
     {
-        throw new NotImplementedException();
+        var response = await _http.PutAsJsonAsync($"medical-centers/{id}", request);
+        if (response.IsSuccessStatusCode)
+        {
+            return new ApiResponse<bool>(true, true, string.Empty);
+        }
+        //ERROR
+        var error = await Helper.LeerErrorAsync(response);
+        return new ApiResponse<bool>(false, false, error);
     }
 }

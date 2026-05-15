@@ -1,32 +1,317 @@
 ﻿@using MedicalCareWeb.Enum
 @using MedicalCareWeb.Models.Centro
-@inject ICentroService CentroServicio
+@using MedicalCareWeb.Models.TipoCentro
 
+@inject ICentroService CentroService
+@inject IHttpClientFactory HttpFactory
 
-<h3>DataEntryCentro</h3>
-<h3>@Total</h3>
+<MudForm @ref="_form" Model="@modelo">
+     <div class="dea-shell">
+        @* ── Separador de sección ────────────────────────── *@
+        <div class="dea-section-label px-4">
+            <MudIcon Icon="@Icons.Material.Filled.LocalHospital"
+                     Style="font-size:14px; color:var(--mud-palette-primary);" />
+            Información General
+        </div>
+        
+        <MudGrid Spacing="2" Class="px-4">
+            @* ── Fila 1: Nombre (full-width) ────────────────── *@
+            <MudItem xs="12">
+                <MudTextField T="string"
+                          Label="Nombre del Centro"
+                          @bind-Value="modelo.Name"
+                          Required="true"
+                          RequiredError="El nombre es obligatorio"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Outlined.BusinessCenter"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          FullWidth="true" />
+            </MudItem>
+            @* ── Fila 2: Direccion ────────────────── *@
+            <MudItem xs="12">
+                <MudTextField T="string"
+                              Label="Dirección"
+                              @bind-Value="modelo.Address"
+                              Required="true"
+                              RequiredError="Dirección es obligatorio"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Outlined.LocationOn"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              FullWidth="true" />
+            </MudItem>
+            @* ── Fila 3: Teléfono | Email ────────────────── *@
+            <MudItem xs="12" sm="5">
+                <MudTextField T="string"
+                                Label="Teléfono"
+                                @bind-Value="modelo.Phone"
+                                Required="true"
+                                RequiredError="El teléfono es obligatorio"
+                                Mask="@(new PatternMask("000 000 000 000"))"
+                                Adornment="Adornment.Start"
+                                AdornmentIcon="@Icons.Material.Outlined.Phone"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                FullWidth="true"
+                                InputType="InputType.Telephone" />
+            </MudItem>
+            @*--Fila 4 Categoria*@
+            <MudItem xs="12" sm=7>
+                @if (tipoCentros != null && tipoCentros.Any())
+                    {
+                    <MudSelect T="string"
+                                Label="Categoria"
+                                Placeholder="Seleccione una categoría"
+                                Value="@(modelo.TypeId == 0 ? "" : modelo.TypeId.ToString())"
+                                ValueChanged="OnTipoChanged"
+                                Variant="Variant.Outlined"
+                                Margin="Margin.Dense"
+                                Required="true"
+                                RequiredError="Tipo es obligatorio"
+                                FullWidth="true">
+                           
+                                    @foreach (var item in tipoCentros)
+                                    {
+                                <MudSelectItem T="string" Value=@item.Id.ToString()>@item.name</MudSelectItem>
+                                    }
+                
+                    </MudSelect>
+                }
+                else
+                {
+                    <div class="d-flex align-center gap-2 pa-4">
+                        <MudProgressCircular Color="Color.Primary" Size="Size.Small" Indeterminate="true" />
+                        <MudText Typo="Typo.body2">Cargando Tipos...</MudText>
+                    </div>
+                }
+            </MudItem>
+            @* ── Estado ──────────────────────────────────── *@
+            <MudItem xs="12" sm="9"/>
+            <MudItem xs="12" sm="3" Class="d-flex align-center">
+                <div class="dea-status-wrap">
+                    @* <span class="dea-status-label">Estado</span> *@
+                    <div class="dea-status-pill @(modelo.IsActive ? "dea-active" : "dea-inactive")">
+                        <MudSwitch @bind-Value="modelo.IsActive"
+                                   Color="Color.Success"
+                                   UncheckedColor="Color.Error"
+                                   Size="Size.Small" />
+                        <span>@(modelo.IsActive ? "Activo" : "Inactivo")</span>
+                    </div>
+                </div>
+            </MudItem>
+        </MudGrid>
+        @* ── Separador de sección ────────────────────────── *@
+        <div class="dea-section-label px-4">
+            <MudIcon Icon="@Icons.Material.Filled.Search"
+                     Style="font-size:14px; color:var(--mud-palette-primary);" />
+            Ubicación
+        </div>
+        <MudGrid Spacing="2" Class="px-4">
+            @*-Buscar Direccion-*@
+            @* <MudItem xs="12" sm="12">
+                <MudTextField Label="Buscar dirección"
+                              @bind-Value="direccionBusqueda"
+                              Placeholder="Ej: Clinica Delgado, Lima" />
+            </MudItem> *@
+            @*Boton busqueda*@
+            <MudItem xs="12" sm="10">
+                <MudButton Variant="Variant.Outlined"
+                           @onclick="BuscarCoordenadas"
+                           Class="m-2">
+                    Buscar en mapa
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+        <!-- Coordenadas -->
+        <MudGrid Spacing="2" Class="px-4">
+            <MudItem xs="6">
+                <MudTextField Label="Latitud"
+                              @bind-Value="modelo.Latitude"
+                              ReadOnly="true" />
+            </MudItem>
+            <MudItem xs="6">
+                <MudTextField Label="Longitud"
+                              @bind-Value="modelo.Longitude"
+                              ReadOnly="true" />
+            </MudItem>
+            <!-- Vista previa -->
+            @if (!string.IsNullOrWhiteSpace(MapUrl))
+            {
+                <MudText Class="mt-3">Vista previa:</MudText>
+
+                <iframe width="100%"
+                        height="300"
+                        style="border:0; border-radius:8px;"
+                        loading="lazy"
+                        src="@MapUrl">
+                </iframe>
+            }
+        </MudGrid>
+ 
+        @* ── Acciones ────────────────────────────────────── *@
+        <div class="dea-actions pa-4">
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Default"
+                       OnClick="Cancel"
+                       Style="font-weight:600; text-transform:none;">
+                Cancelar
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@(EsEdicion ? Icons.Material.Filled.Save : Icons.Material.Filled.AddBusiness)"
+                       OnClick="Submit"
+                       Style="font-weight:600; text-transform:none; border-radius:8px; min-width:130px;">
+                @(EsEdicion ? "Actualizar" : "Registrar")
+            </MudButton>
+        </div>
+     </div>
+</MudForm>
 
 
 @code {
-    [CascadingParameter]
-    private IMudDialogInstance? MudDialog { get; set; }
-    [Parameter, EditorRequired]
-    public UpdateCentroRequestDto modelo { get; set; }
+    [CascadingParameter] private IMudDialogInstance? MudDialog { get; set; }
+    [Parameter, EditorRequired] public UpdateCentroRequestDto modelo { get; set; } = new();
     [Parameter] public bool EsEdicion { get; set; }
 
-    // ── Estado interno ─────────────────────────────────────────────────────────
     private MudForm? _form;
-    private int Total;
+    private IEnumerable<TipoCentroDto> tipoCentros = [];
+
+    private string? direccionBusqueda;
+
+    private string MapUrl =>
+        ((modelo.Latitude != 0) && (modelo.Longitude != 0))
+        ? $"https://www.google.com/maps?q={modelo.Latitude},{modelo.Longitude}&output=embed"
+        : null;
+
+    //---------------
 
     protected override async Task OnInitializedAsync()
     {
         await Load();
     }
 
+    //
+    private void Cancel() => MudDialog?.Cancel();
+    //
     private async Task Load()
     {
-        var response = await TipoCentroService.GetAllTipoCentroAsync(EnumStatus.Activo);
-
-        Total = response.Count();
+        tipoCentros = await TipoCentroService.GetAllTipoCentroAsync(EnumStatus.Activo);
     }
+    //
+    private async Task Submit()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Por favor completa los campos obligatorios.", Severity.Warning);
+            return;
+        }
+
+        if (EsEdicion)
+             await EditSubmit();
+        else
+             await NewSubmit();
+    }
+    //
+    private async Task NewSubmit()
+    {
+        var request = new CreateCentroRequestDto
+        {
+            Name = modelo.Name,
+            TypeId = modelo.TypeId,
+            Address = modelo.Address,
+            Phone = modelo.Phone,
+            IsActive = modelo.IsActive,
+            Latitude = (double)modelo.Latitude,
+            Longitude = (double)modelo.Longitude
+        };
+        //
+       
+        var response = await CentroService.CreateCentroAsync(request);
+        if (!response.Success)
+        {
+            Snackbar.Add($"Error: {response.ErrorMessage}", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add($"Centro Medico \"{modelo.Name}\" registrado correctamente.", Severity.Success);
+            MudDialog?.Close(DialogResult.Ok(true));
+        }
+    }
+    //
+    private async Task EditSubmit()
+    {
+        var request = new UpdateCentroRequestDto
+        {
+            Id = modelo.Id,
+            TypeId = modelo.TypeId,
+            Name = modelo.Name,
+            Address = modelo.Address,
+            Phone = modelo.Phone,
+            Latitude = (double)modelo.Latitude,
+            Longitude = (double)modelo.Longitude
+        };
+
+        var response = await CentroService.UpdateCentroAsync(modelo.Id, request);
+        if (!response.Success)
+        {
+            Snackbar.Add($"Error: {response.ErrorMessage}", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add($"Tipo Centro \"{modelo.Name}\" actualizado.", Severity.Success);
+            MudDialog?.Close(DialogResult.Ok(true));
+        }
+    }
+    //
+    private void OnTipoChanged(string value)
+    {
+        if (int.TryParse(value, out var id))
+        {
+            modelo.TypeId = id;
+        }
+        else
+        {
+            modelo.TypeId = 0; // Mantiene el valor en 0 internamente si se limpia
+        }
+    }
+    //
+    // 🌍 Geocoding usando Nominatim (OpenStreetMap - gratis)
+    private async Task BuscarCoordenadas()
+    {
+        //Console.WriteLine($"Buscando coordenadas para: {direccionBusqueda}");
+        direccionBusqueda = modelo.Address;
+        if (string.IsNullOrWhiteSpace(direccionBusqueda))
+            return;
+        try
+        {
+            // Usa el cliente externo sin BaseAddress de tu API
+            var http = HttpFactory.CreateClient("Externo");
+            var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(direccionBusqueda)}&format=json&limit=1";
+
+            // Nominatim requiere User-Agent obligatorio
+            http.DefaultRequestHeaders.UserAgent.ParseAdd("MedicalCareApp/1.0"); //se debe llevar esta logica al BackEd
+            var result = await http.GetFromJsonAsync<List<NominatimResult>>(url);
+
+            if (result != null && result.Any())
+            {
+                modelo.Latitude = result[0].lat;
+                modelo.Longitude = result[0].lon;
+            }
+        }
+        catch (Exception ex)
+        {
+            // Manejo simple
+            Snackbar.Add($"=== Error BuscarCoordenadas: {ex.Message}", Severity.Warning);
+            //Console.WriteLine($"=== Error BuscarCoordenadas: {ex.Message}");
+        }
+    }
+
+    private class NominatimResult
+    {
+        public double lat { get; set; }
+        public double lon { get; set; }
+    }
+
 }
