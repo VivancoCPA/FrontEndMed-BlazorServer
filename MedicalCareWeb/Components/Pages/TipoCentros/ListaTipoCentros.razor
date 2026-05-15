@@ -1,0 +1,324 @@
+﻿@page "/tipo-centro"
+@using MedicalCareWeb.Models.TipoCentro
+
+<MudContainer Fixed="true" >
+    <MudGrid Class="d-flex flex-row align-start py-4" Spacing="4">
+        @* Primer DataGrid (Ocupa seccion izq) *@
+        <MudItem xs="12" md="7">   
+            <MudDataGrid T="TipoCentroDto"
+                 Dense="true"
+                 @ref="grid"
+                 Hover="true"
+                 Elevation="2"
+                 RowsPerPage="20"
+                 Height="500px"
+                 RowClick="@OnFilaSeleccionada"
+                 ServerData="LoadServerData">
+                @* Loading para espera *@
+                <LoadingContent>
+                    <div class="d-flex flex-column align-center justify-center" style="height:200px;">
+                        <MudProgressCircular Indeterminate="true" />
+                        <MudText Class="mt-2">Cargando Tipos de Centro...</MudText>
+                    </div>
+                </LoadingContent>
+                @* Cabcera de la Lista *@
+                <ToolBarContent>
+                    @* Titulo *@
+                    <MudText Typo="Typo.h6">Listado de Tipos de Centro</MudText>
+                    <MudSpacer />
+                    @* Campo de Busqueda *@
+                    <MudTextField T="string"
+                                  Placeholder="Busqueda"
+                                  ValueChanged="OnSearchChanged"
+                                  Adornment="Adornment.Start"
+                                  Immediate="true"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  IconSize="Size.Medium"
+                                  Class="mt-0"></MudTextField>
+                    <MudSpacer />
+                    @* Boton Nuevo *@
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               Style="font-size: 12px;"
+                               OnClick="NuevoTipo">
+                        Nuevo
+                    </MudButton>
+                </ToolBarContent>
+                 @* Definicion de las columnas *@
+                <Columns>
+                    <PropertyColumn Property="x => x.Id" HeaderStyle="@_HeaderStyle" Title="Id" CellStyle="width:120px" />
+                    <PropertyColumn Property="x => x.name" HeaderStyle="@_HeaderStyle" Title="Descripción" />
+                    <TemplateColumn Title="Estado" HeaderStyle="@_HeaderStyle" Context="context" CellStyle="width:150px">
+                        <CellTemplate>
+                            <div class="d-flex">
+                               @*  <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Color="Color.Info"
+                                               Size="Size.Small"
+                                               OnClick="@(() => EditarTipo(context.Item))" /> *@
+                                <MudSwitch T="bool"
+                                           Value="context.Item.isActive"
+                                           Color="Color.Success"
+                                           UncheckedColor="Color.Error"
+                                           ReadOnly="true"
+                                          >
+                                    <MudText Typo="Typo.subtitle2" Class="ml-2">
+                                        @(context.Item.isActive ? "Activo" : "Inactivo")
+                                    </MudText>
+                                </MudSwitch>
+                            </div>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+                @* Paginador *@
+                <PagerContent>
+                    <MudDataGridPager T="TipoCentroDto"
+                                      ShowPageSizeSelector="true"
+                                      PageSizeOptions="new int[] {5,10,20,50}" />
+                </PagerContent>
+            </MudDataGrid>
+        </MudItem>
+         @* Segundo DataGrid (Ocupa la otra parte del ancho) *@
+        @if (modeloFormulario is not null)
+        {
+            <MudItem xs="12" md="5">
+                <MudPaper Class="pa-4 mx-auto" Outlined="true" Elevation="1" MaxWidth="100%">
+                    <MudForm @ref="form" Model="@modeloFormulario" OnValidSubmit="HandleSubmit">
+                        @* ── Separador de sección ────────────────────────── *@
+                        <div class="px-4">
+                            <MudIcon Icon="@Icons.Material.Filled.LocalHospital" 
+                            Style="font-size:30px; color:var(--mud-palette-primary);" />
+                            <span style="font-size:20px;">Centro Medico - @(EsEdicion ? "Edicion" : "Nuevo ingreso")</span>
+                        </div>
+                        <MudGrid class="pa-4">
+                            <!-- Campo 1 Nombre -->
+                            @* espacio de total es 12*@
+                            <MudItem xs="12">
+                                <MudTextField T="string"
+                                Label="Nombre"
+                                @bind-Value="modeloFormulario.name"
+                                Required="true"
+                                RequiredError="El nombre es obligatorio" />
+                            </MudItem>
+                            <MudDivider Class="my-2" />
+                            <!-- Campo 2 Estado-->
+                            <MudItem xs="12" Class="d-flex align-center">
+                                <MudSwitch @bind-Value="modeloFormulario.isActive"
+                                Color="Color.Success"
+                                UncheckedColor="Color.Error"
+                                Label="Estado"
+                                LabelPlacement=Placement.Start />
+                            </MudItem>
+                        </MudGrid>
+
+                        <!-- Botón -->
+                        <MudButton Variant="Variant.Filled"
+                        Color="Color.Primary"
+                        Class="mt-4"
+                        @onclick="Submit">
+                            @(EsEdicion ? "Actualizar" : "Registrar")
+                        </MudButton>
+
+                    </MudForm>
+
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+</MudContainer>
+
+
+@code {
+    private string? _searchString;
+    private int? _lastPage;
+    private int? _lastPageSize;
+    private string? _lastSearch;
+    private string? _lastColSort;
+    private bool? _lastOrderSort;
+    private string _HeaderStyle = "background-color: var(--mud-palette-primary) !important; color: white !important; font-weight: bold; height: 40px;";
+
+    private MudDataGrid<TipoCentroDto>? grid;
+    private CancellationTokenSource? _cts;
+    private MudForm? form;
+
+    // Referencia al elemento original que se está editando
+    private TipoCentroDto? elementoOriginal;
+    // Modelo que almacena la copia del elemento para el formulario
+    private TipoCentroDto? modeloFormulario ;
+    private bool EsEdicion = true;
+
+    private async void NuevoTipo()
+    {
+        modeloFormulario = new();
+        EsEdicion = false;
+    }
+
+    private async Task Submit()
+    {
+        //Console.WriteLine($"Edicion?: {esEdicion}");
+        await form.ValidateAsync();
+
+        if (form.IsValid)
+        {
+            if (!EsEdicion)
+            {
+                await NewSubmit();
+            }
+            else
+            {
+                await EditSubmit();
+            }
+            await CargarDatos();
+        }
+        else
+        {
+            Snackbar.Add("Por favor, complete todos los campos requeridos.", Severity.Warning);
+        }
+    }
+    //
+    private async Task NewSubmit()
+    {
+        // Aquí llamas a tu API
+        var request = new CreateTipoCentroRequestDto
+        {
+            name = modeloFormulario!.name,
+            isActive = modeloFormulario!.isActive,
+        };
+        //
+        var response = await TipoCentroService.CreateTipoCentroAsync(request);
+        if (!response.Success)
+        {
+            Snackbar.Add($"Error: {response.ErrorMessage!}", Severity.Error);
+        }
+        else
+        {
+            // API exitosa — confirmar el nuevo valor
+            //centro.isActive = nuevoValor;
+            Snackbar.Add($"Tipo de Centro {modeloFormulario.name} actualizado.", Severity.Success);
+            //MudDialog.Close(DialogResult.Ok(true)); // ✅ cierra y notifica
+        }
+    }
+    private async Task EditSubmit()
+    {
+        var request = new UpdateTipoCentroRequestDto
+        {
+            Id = modeloFormulario!.Id,
+            name = modeloFormulario.name!,
+            isActive = modeloFormulario.isActive
+        };
+        //Console.WriteLine($"Request: {System.Text.Json.JsonSerializer.Serialize(request)}");
+        var response = await TipoCentroService.UpdateTipoCentroAsync(modeloFormulario.Id, request);
+        if (!response.Success)
+        {
+            Snackbar.Add($"Error: {response.ErrorMessage!}", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add($"Tipo Centro {modeloFormulario.name} actualizado.", Severity.Success);
+            //MudDialog.Close(DialogResult.Ok(true)); // ✅ cierra y notifica
+        }
+    }
+    //
+    private async Task<GridData<TipoCentroDto>>
+        LoadServerData(GridState<TipoCentroDto> state, CancellationToken ct)
+    {
+        //await Task.Delay(1000);//
+        //Console.WriteLine("Misma consulta, evitando llamada API");
+
+        var sort = state.SortDefinitions.FirstOrDefault();
+
+        if (_lastPage == state.Page &&
+            _lastPageSize == state.PageSize &&
+            _lastSearch == _searchString &&
+            _lastColSort == sort?.SortBy &&
+            _lastOrderSort == sort?.Descending
+        )
+        {
+            return new GridData<TipoCentroDto>(); // evita duplicado
+        }
+        _lastPage = state.Page;
+        _lastPageSize = state.PageSize;
+        _lastSearch = _searchString;
+        _lastColSort = sort?.SortBy;
+        _lastOrderSort = sort?.Descending;
+        // ⚠️ Mud usa Page 0-based → tu API usa 1-based
+        var page = state.Page + 1;
+        var paramters = new ListedPagedDto
+            (
+             Page: page,
+             PageSize: state.PageSize,
+             Search: _searchString,
+             SortBy: sort?.SortBy,
+             SortDesc: sort?.Descending ?? false
+            );
+
+        var response = await TipoCentroService.GetTipoCentroPaged(paramters);
+        if (!response.Success)
+        {
+            Snackbar.Add(response.ErrorMessage!, Severity.Error);
+            return new GridData<TipoCentroDto>
+            {
+                Items = [],
+                TotalItems = 0
+            };
+        }
+        modeloFormulario = null;//para inicar formulario
+        EsEdicion = true;
+        return new GridData<TipoCentroDto>// mapea tu respuesta al formato que espera MudDataGrid
+        {
+            Items = response.Items,
+            TotalItems = response.TotalCount
+        };
+
+    }
+
+    private async Task OnSearchChanged(string value)
+    {
+        // Lógica de búsqueda aquí
+        if (grid is null)
+            return; // 👈 evita crash
+
+        _cts?.Cancel(); // cancela llamada anterior
+        _cts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(400, _cts.Token); // ⏱ espera (ajustable)
+            //Console.WriteLine($"Search changed: {value}");
+            _searchString = value;
+            grid.NavigateTo(0); // 👈 vuelve a página 1
+            await grid.ReloadServerData(); // 🔥 dispara el filtro en backend = LoadServerData
+        }
+        catch (TaskCanceledException)
+        {
+            // normal: usuario sigue escribiendo
+        }
+    }
+    // Evento que se dispara al hacer clic en cualquier fila de la tabla
+    private void OnFilaSeleccionada(DataGridRowClickEventArgs<TipoCentroDto> args)
+    {
+        elementoOriginal = args.Item;
+
+        // Creamos una copia para evitar modificar la tabla directamente antes de guardar
+        modeloFormulario = new TipoCentroDto
+        {
+            Id = elementoOriginal.Id,
+            name = elementoOriginal.name,
+            isActive = elementoOriginal.isActive
+        };
+        EsEdicion = true;
+    }
+    private async Task CargarDatos()
+    {
+        await InvokeAsync(async () =>
+        {
+            if (grid is not null)
+            {
+                _lastPage = null; //asegurar que se recarga para que pase la validacion inicial
+                grid.NavigateTo(0);              // sync
+                await grid.ReloadServerData();   // async
+                StateHasChanged();
+            }
+        });
+    }
+}

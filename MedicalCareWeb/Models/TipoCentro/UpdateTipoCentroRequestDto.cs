@@ -2,6 +2,6 @@
 {
     public class UpdateTipoCentroRequestDto: CreateTipoCentroRequestDto
     {
-        public int id { get; set; }
+        public int Id { get; set; }
     }
 }
