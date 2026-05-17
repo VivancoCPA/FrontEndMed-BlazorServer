@@ -3,7 +3,7 @@
     background: var(--mud-palette-surface);
     border-radius: 10px;
     border: 1px solid var(--mud-palette-divider);
-    border-left: 4px solid var(--kpi-accent, #1E6FD9);
+    /*border-top: 4px solid var(--kpi-accent, #1E6FD9);*/
     padding: 18px 20px 18px 18px;
     display: flex;
     align-items: flex-start;

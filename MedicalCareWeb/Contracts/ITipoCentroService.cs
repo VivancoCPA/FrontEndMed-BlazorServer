@@ -10,5 +10,4 @@ public interface ITipoCentroService
     Task<PaginatedResultDto<TipoCentroDto>> GetTipoCentroPaged(ListedPagedDto paginacion);
     Task<ApiResponse<bool>> CreateTipoCentroAsync(CreateTipoCentroRequestDto request);
     Task<ApiResponse<bool>> UpdateTipoCentroAsync(int id, UpdateTipoCentroRequestDto request);
-    Task<ApiResponse<bool>> ToggleTipoCentroAsync(int id);
 }

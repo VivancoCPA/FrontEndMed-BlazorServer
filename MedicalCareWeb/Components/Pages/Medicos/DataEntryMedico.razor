@@ -1,0 +1,318 @@
+﻿@using MedicalCareWeb.Models.Medico
+@using System.ComponentModel.DataAnnotations
+
+<MudForm @ref="doctorForm" @bind-IsValid="isFormValid">
+    <MudGrid Spacing="3" Class="mt-1">
+        <MudItem xs="12" md="8">
+            <MudGrid Spacing="3">
+                <MudItem xs="12">
+                    <MudPaper Outlined="true" Class="pa-4">
+                        <div class="d-flex align-center gap-2 mb-4">
+                            <MudIcon Icon="@Icons.Material.Filled.Badge" Color="Color.Primary" />
+                            <MudText Typo="Typo.h5">Información Personal</MudText>
+                        </div>
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12" sm="6">
+                                <MudTextField T="string"
+                                              @bind-Value="doctorFormModel.name"
+                                              Label="Nombre"
+                                              Variant="Variant.Outlined"
+                                              Required="true"
+                                              RequiredError="El nombre es obligatorio" />
+                            </MudItem>
+                            <MudItem xs="12" sm="6">
+                                <MudTextField T="string"
+                                              @bind-Value="doctorFormModel.lastName"
+                                              Label="Apellido"
+                                              Variant="Variant.Outlined"
+                                              Required="true"
+                                              RequiredError="El apellido es obligatorio" />
+                            </MudItem>
+                            <MudItem xs="12" sm="6">
+                                <MudSelect T="string"
+                                           @bind-Value="doctorFormModel.SpecialtyName"
+                                           Label="Especialidad"
+                                           Variant="Variant.Outlined"
+                                           Required="true"
+                                           RequiredError="La especialidad es obligatoria">
+                                    @foreach (var speciality in specialityOptions)
+                                    {
+                                        <MudSelectItem T="string" Value="@speciality">@speciality</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" sm="6">
+                                <MudTextField T="string"
+                                              @bind-Value="doctorFormModel.register"
+                                              Label="Número de Registro"
+                                              Variant="Variant.Outlined"
+                                              Required="true"
+                                              RequiredError="El número de registro es obligatorio" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudPaper Outlined="true" Class="pa-4">
+                        <div class="d-flex align-center gap-2 mb-4">
+                            <MudIcon Icon="@Icons.Material.Filled.ContactPhone" Color="Color.Primary" />
+                            <MudText Typo="Typo.h5">Contacto y Medios</MudText>
+                        </div>
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12" sm="6">
+                                <MudTextField T="string"
+                                              @bind-Value="doctorFormModel.phone"
+                                              Label="Teléfono"
+                                              Variant="Variant.Outlined"
+                                              Required="true"
+                                              RequiredError="El teléfono es obligatorio" />
+                            </MudItem>
+                            <MudItem xs="12" sm="6">
+                                <MudTextField T="string"
+                                              @bind-Value="doctorFormModel.email"
+                                              Label="Email"
+                                              Variant="Variant.Outlined"
+                                              Required="true"
+                                              RequiredError="El email es obligatorio"
+                                              Validation="@(new EmailAddressAttribute { ErrorMessage = "Ingrese un email válido" })" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <div class="d-flex flex-column flex-sm-row gap-2 align-stretch">
+                                    <MudTextField T="string"
+                                                  @bind-Value="doctorFormModel.photoUrl"
+                                                  Label="URL de Foto"
+                                                  Variant="Variant.Outlined"
+                                                  HelperText="Use una URL pública o una carga simulada"
+                                                  Required="true"
+                                                  RequiredError="La URL de foto es obligatoria"
+                                                  Class="flex-1" />
+                                    <MudButton Variant="Variant.Outlined"
+                                               Color="Color.Default"
+                                               StartIcon="@Icons.Material.Filled.CloudUpload"
+                                               OnClick="SetPlaceholderAvatar">
+                                        Subir
+                                    </MudButton>
+                                </div>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudGrid Spacing="3">
+                <MudItem xs="12">
+                    <MudPaper Outlined="true" Class="pa-4 mud-theme-primary">
+                        <div class="d-flex flex-column align-center gap-3">
+                            <MudPaper Outlined="true" Class="pa-1 rounded-lg">
+                                <MudAvatar Size="Size.Large">
+                                    <MudImage Src="@GetPreviewAvatar()" Alt="Doctor profile preview" />
+                                </MudAvatar>
+                            </MudPaper>
+                            <MudText Typo="Typo.h5" Align="Align.Center">Vista Previa</MudText>
+                            <MudText Typo="Typo.subtitle2" Align="Align.Center">@GetProfileStateText()</MudText>
+                            <MudText Typo="Typo.body1" Align="Align.Center">@GetDoctorDisplayName()</MudText>
+                            <MudText Typo="Typo.body2" Align="Align.Center">@GetDoctorPreviewSubtitle()</MudText>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudPaper Outlined="true" Class="pa-4">
+                        <div class="d-flex align-center gap-2 mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" />
+                            <MudText Typo="Typo.h5">Configuración</MudText>
+                        </div>
+
+                        <MudPaper Outlined="true" Class="pa-3 mb-2">
+                            <div class="d-flex justify-space-between align-center gap-3">
+                                <div>
+                                    <MudText Typo="Typo.subtitle2">Estado Activo</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Habilitar en el sistema</MudText>
+                                </div>
+                                <MudSwitch T="bool"
+                                           @bind-Value="doctorFormModel.isActive"
+                                           Color="Color.Primary" />
+                            </div>
+                        </MudPaper>
+
+                        <MudPaper Outlined="true" Class="pa-3">
+                            <div class="d-flex justify-space-between align-center gap-3">
+                                <div>
+                                    <MudText Typo="Typo.subtitle2">Es Veterinario</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Atención de mascotas</MudText>
+                                </div>
+                                <MudSwitch T="bool"
+                                           @bind-Value="doctorFormModel.isVet"
+                                           Color="Color.Primary" />
+                            </div>
+                        </MudPaper>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudPaper Outlined="true" Class="pa-4">
+                        <div class="d-flex align-center gap-2 mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.LocalHospital" Color="Color.Primary" />
+                            <MudText Typo="Typo.h5">Asociación de Centros</MudText>
+                        </div>
+
+                        @if (doctorFormModel.Centers.Count > 0)
+                        {
+                            @foreach (var center in doctorFormModel.Centers)
+                            {
+                                <MudPaper Outlined="true" Class="pa-3 mb-3">
+                                    <div class="d-flex justify-space-between align-start gap-2 mb-2">
+                                        <div>
+                                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">@center.Name</MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">Centro vinculado</MudText>
+                                        </div>
+                                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline"
+                                                       Color="Color.Error"
+                                                       Variant="Variant.Text"
+                                                       OnClick="@(() => RemoveCenter(center))" />
+                                    </div>
+                                    <MudGrid Spacing="2">
+                                        <MudItem xs="12" sm="6">
+                                            <MudTextField T="string"
+                                                          @bind-Value="center.OfficeNumber"
+                                                          Label="Oficina"
+                                                          Variant="Variant.Outlined" />
+                                        </MudItem>
+                                        <MudItem xs="12" sm="6">
+                                            <MudTextField T="string"
+                                                          @bind-Value="center.WorkSchedule"
+                                                          Label="Descripción"
+                                                          Variant="Variant.Outlined" />
+                                        </MudItem>
+                                    </MudGrid>
+                                </MudPaper>
+                            }
+                        }
+
+                        <MudText Typo="Typo.body2" Class="mb-2">Vincular nuevo centro</MudText>
+                        <div class="d-flex flex-column flex-sm-row gap-2 align-stretch">
+                            <MudSelect T="string"
+                                       @bind-Value="selectedCenter"
+                                       Label="Buscar centro"
+                                       Variant="Variant.Outlined"
+                                       Class="flex-1">
+                                @foreach (var centerOption in availableCenters)
+                                {
+                                    <MudSelectItem T="string" Value="@centerOption">@centerOption</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Add"
+                                       OnClick="AddSelectedCenter">
+                                Añadir
+                            </MudButton>
+                        </div>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+                            Configure los detalles específicos para cada ubicación vinculada.
+                        </MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+</MudForm>
+
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance? MudDialog { get; set; }
+    [Parameter, EditorRequired]
+    public UpdateMedicoRequestDto doctorFormModel { get; set; }
+    [Parameter] public bool EsEdicion { get; set; }
+
+    private MudForm? doctorForm;
+    private bool isFormValid;
+    //private MedicoDto doctorFormModel = new();
+    private string selectedCenter = string.Empty;
+    private readonly List<string> availableCenters = new()
+    {
+        "Central Medical Center",
+        "North Clinic",
+        "Family Health Unit",
+        "Santa Maria Hospital",
+        "Downtown Diagnostic Center"
+    };
+    private readonly List<string> specialityOptions = new()
+    {
+        "Cardiology",
+        "Neurology",
+        "Pediatrics",
+        "Dermatology",
+        "Oncology",
+        "Orthopedics",
+        "Gynecology",
+        "Radiology",
+        "Endocrinology",
+        "Urology",
+        "Ophthalmology",
+        "Psychiatry"
+    };
+    private void SetPlaceholderAvatar()
+    {
+        var initials = "AV";
+        doctorFormModel.photoUrl = $"https://placehold.co/120x120?text={initials}";
+    }
+    private string GetPreviewAvatar()
+    {
+        return string.IsNullOrWhiteSpace(doctorFormModel.photoUrl)
+            ? "https://placehold.co/120x120?text=DR"
+            : doctorFormModel.photoUrl;
+    }
+
+    private string GetDoctorDisplayName()
+    {
+        var fullName = $"{doctorFormModel.name} {doctorFormModel.lastName}".Trim();
+        return string.IsNullOrWhiteSpace(fullName) ? "Doctor Preview" : fullName;
+    }
+
+    private string GetDoctorPreviewSubtitle()
+    {
+        var speciality = string.IsNullOrWhiteSpace(doctorFormModel.SpecialtyName) ? "No speciality selected" : doctorFormModel.SpecialtyName;
+        var registration = string.IsNullOrWhiteSpace(doctorFormModel.register) ? "Pending registry" : doctorFormModel.register;
+        return $"{speciality} • {registration}";
+    }
+
+    private string GetProfileStateText()
+    {
+        return doctorFormModel.isActive ? "ESTADO DE PERFIL" : "PERFIL INACTIVO";
+    }
+
+    private void RemoveCenter(MedicoCentroAfiliadoDto center)
+    {
+        doctorFormModel.Centers.Remove(center);
+
+    }
+    private void AddSelectedCenter()
+    {
+        if (string.IsNullOrWhiteSpace(selectedCenter))
+        {
+            return;
+        }
+
+        if (doctorFormModel.Centers.Any(x => x.Name == selectedCenter))
+        {
+            selectedCenter = string.Empty;
+            return;
+        }
+
+        doctorFormModel.Centers.Add(new MedicoCentroAfiliadoDto
+        {
+            Name = selectedCenter
+        });
+
+        selectedCenter = string.Empty;
+    }
+
+
+
+
+}

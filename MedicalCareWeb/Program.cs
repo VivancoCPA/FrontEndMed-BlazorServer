@@ -36,6 +36,8 @@ builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorArchivosLocal>();
 builder.Services.AddScoped<IAseguradoraService, AseguradoraService> ();
 builder.Services.AddScoped<ICentroService, CentroService>();
 builder.Services.AddScoped<ITipoCentroService, TipoCentroService>();
+builder.Services.AddScoped<ITipoEspecialidadService, TipoEspecialidadService>();
+builder.Services.AddScoped<IMedicoService, MedicoService>();
 
 // Add MudBlazor services
 builder.Services.AddMudServices();

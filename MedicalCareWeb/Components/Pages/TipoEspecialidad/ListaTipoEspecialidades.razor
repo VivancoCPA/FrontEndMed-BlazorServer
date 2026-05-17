@@ -1,30 +1,30 @@
-﻿@page "/tipo-centro"
-@using MedicalCareWeb.Models.TipoCentro
+﻿@page "/tipo_especialidad"
+@using MedicalCareWeb.Models.TipoEspecialidad
 
-<MudContainer Fixed="true" >
+<MudContainer Fixed="true">
     <MudGrid Class="d-flex flex-row align-start py-4" Spacing="4">
         @* Primer DataGrid (Ocupa seccion izq) *@
-        <MudItem xs="12" md="7">   
-            <MudDataGrid T="TipoCentroDto"
-                 Dense="true"
-                 @ref="grid"
-                 Hover="true"
-                 Elevation="2"
-                 RowsPerPage="20"
-                 Height="500px"
-                 RowClick="@OnFilaSeleccionada"
-                 ServerData="LoadServerData">
+        <MudItem xs="12" md="7">
+            <MudDataGrid T="TipoEspecialidadDto"
+                         Dense="true"
+                         @ref="grid"
+                         Hover="true"
+                         Elevation="2"
+                         RowsPerPage="20"
+                         Height="500px"
+                         RowClick="@OnFilaSeleccionada"
+                         ServerData="LoadServerData">
                 @* Loading para espera *@
                 <LoadingContent>
                     <div class="d-flex flex-column align-center justify-center" style="height:200px;">
                         <MudProgressCircular Indeterminate="true" />
-                        <MudText Class="mt-2">Cargando Tipos de Centro...</MudText>
+                        <MudText Class="mt-2">Cargando Tipos Especialidad...</MudText>
                     </div>
                 </LoadingContent>
                 @* Cabcera de la Lista *@
                 <ToolBarContent>
                     @* Titulo *@
-                    <MudText Typo="Typo.h6">Listado de Tipos de Centro</MudText>
+                    <MudText Typo="Typo.h6">Listado de Tipos de Especialidad</MudText>
                     <MudSpacer />
                     @* Campo de Busqueda *@
                     <MudTextField T="string"
@@ -45,14 +45,14 @@
                         Nuevo
                     </MudButton>
                 </ToolBarContent>
-                 @* Definicion de las columnas *@
+                @* Definicion de las columnas *@
                 <Columns>
                     <PropertyColumn Property="x => x.Id" HeaderStyle="@_HeaderStyle" Title="Id" CellStyle="width:120px" />
                     <PropertyColumn Property="x => x.name" HeaderStyle="@_HeaderStyle" Title="Descripción" />
                     <TemplateColumn Title="Estado" HeaderStyle="@_HeaderStyle" Context="context" CellStyle="width:150px">
                         <CellTemplate>
                             <div class="d-flex">
-                               @*  <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                @*  <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                                Color="Color.Info"
                                                Size="Size.Small"
                                                OnClick="@(() => EditarTipo(context.Item))" /> *@
@@ -60,8 +60,7 @@
                                            Value="context.Item.isActive"
                                            Color="Color.Success"
                                            UncheckedColor="Color.Error"
-                                           ReadOnly="true"
-                                          >
+                                           ReadOnly="true">
                                     <MudText Typo="Typo.subtitle2" Class="ml-2">
                                         @(context.Item.isActive ? "Activo" : "Inactivo")
                                     </MudText>
@@ -72,13 +71,13 @@
                 </Columns>
                 @* Paginador *@
                 <PagerContent>
-                    <MudDataGridPager T="TipoCentroDto"
+                    <MudDataGridPager T="TipoEspecialidadDto"
                                       ShowPageSizeSelector="true"
                                       PageSizeOptions="new int[] {5,10,20,50}" />
                 </PagerContent>
             </MudDataGrid>
         </MudItem>
-         @* Segundo DataGrid (Ocupa la otra parte del ancho) *@
+        @* Segundo DataGrid (Ocupa la otra parte del ancho) *@
         @if (modeloFormulario is not null)
         {
             <MudItem xs="12" md="5">
@@ -86,37 +85,36 @@
                     <MudForm @ref="form" Model="@modeloFormulario" OnValidSubmit="HandleSubmit">
                         @* ── Separador de sección ────────────────────────── *@
                         <div class="px-4">
-                            <MudIcon Icon="@Icons.Material.Filled.LocalHospital" 
-                            Style="font-size:30px; color:var(--mud-palette-primary);" />
-                            <span style="font-size:20px;">Centro Medico - @(EsEdicion ? "Edicion" : "Nuevo ingreso")</span>
+                            <MudIcon Icon="@Icons.Material.Filled.MedicalServices"
+                                     Style="font-size:30px; color:var(--mud-palette-primary);" />
+                            <span style="font-size:20px;">Especialidad - @(EsEdicion ? "Edicion" : "Nuevo ingreso")</span>
                         </div>
                         <MudGrid class="pa-4">
                             <!-- Campo 1 Nombre -->
                             @* espacio de total es 12*@
                             <MudItem xs="12">
                                 <MudTextField T="string"
-                                Label="Nombre"
-                                @bind-Value="modeloFormulario.name"
-                                Required="true"
-                                RequiredError="El nombre es obligatorio" />
+                                              Label="Nombre"
+                                              @bind-Value="modeloFormulario.name"
+                                              Required="true"
+                                              RequiredError="El nombre es obligatorio" />
                             </MudItem>
                             <MudDivider Class="my-2" />
                             <!-- Campo 2 Estado-->
                             <MudItem xs="12" Class="d-flex align-center">
-                                <MudSwitch 
-                                    @bind-Value="modeloFormulario.isActive"
-                                    Color="Color.Success"
-                                    UncheckedColor="Color.Error"
-                                    Label="Estado"
-                                    LabelPlacement=Placement.Start />
+                                <MudSwitch @bind-Value="modeloFormulario.isActive"
+                                           Color="Color.Success"
+                                           UncheckedColor="Color.Error"
+                                           Label="Estado"
+                                           LabelPlacement=Placement.Start />
                             </MudItem>
                         </MudGrid>
 
                         <!-- Botón -->
                         <MudButton Variant="Variant.Filled"
-                        Color="Color.Primary"
-                        Class="mt-4"
-                        @onclick="Submit">
+                                   Color="Color.Primary"
+                                   Class="mt-4"
+                                   @onclick="Submit">
                             @(EsEdicion ? "Actualizar" : "Registrar")
                         </MudButton>
 
@@ -128,7 +126,6 @@
     </MudGrid>
 </MudContainer>
 
-
 @code {
     private string? _searchString;
     private int? _lastPage;
@@ -138,14 +135,14 @@
     private bool? _lastOrderSort;
     private string _HeaderStyle = "background-color: var(--mud-palette-primary) !important; color: white !important; font-weight: bold; height: 40px;";
 
-    private MudDataGrid<TipoCentroDto>? grid;
+    private MudDataGrid<TipoEspecialidadDto>? grid;
     private CancellationTokenSource? _cts;
     private MudForm? form;
 
     // Referencia al elemento original que se está editando
-    private TipoCentroDto? elementoOriginal;
+    private TipoEspecialidadDto? elementoOriginal;
     // Modelo que almacena la copia del elemento para el formulario
-    private TipoCentroDto? modeloFormulario ;
+    private TipoEspecialidadDto? modeloFormulario;
     private bool EsEdicion = true;
 
     private async void NuevoTipo()
@@ -180,26 +177,26 @@
     private async Task NewSubmit()
     {
         // Aquí llamas a tu API
-        var request = new CreateTipoCentroRequestDto
+        var request = new CreateTipoEspecialidadRequestDto
         {
             name = modeloFormulario!.name,
             isActive = modeloFormulario!.isActive,
         };
         //
-        var response = await TipoCentroService.CreateTipoCentroAsync(request);
+        var response = await TipoEspecialidadService.CreateTipoEspecialidadAsync(request);
         if (!response.Success)
         {
             Snackbar.Add($"Error: {response.ErrorMessage!}", Severity.Error);
         }
         else
         {
-            Snackbar.Add($"Tipo de Centro {modeloFormulario.name} actualizado.", Severity.Success);
+            Snackbar.Add($"Tipo de Especialidad {modeloFormulario.name} actualizado.", Severity.Success);
             //MudDialog.Close(DialogResult.Ok(true)); // ✅ cierra y notifica
         }
     }
     private async Task EditSubmit()
     {
-        var request = new UpdateTipoCentroRequestDto
+        var request = new UpdateTipoEspecialidadRequestDto
         {
             Id = modeloFormulario.Id,
             name = modeloFormulario.name!,
@@ -207,20 +204,20 @@
         };
 
         //Console.WriteLine($"Request: {System.Text.Json.JsonSerializer.Serialize(request)}");
-        var response = await TipoCentroService.UpdateTipoCentroAsync(modeloFormulario.Id, request);
+        var response = await TipoEspecialidadService.UpdateTipoEspecialidadAsync(modeloFormulario.Id, request);
         if (!response.Success)
         {
             Snackbar.Add($"Error: {response.ErrorMessage!}", Severity.Error);
         }
         else
         {
-            Snackbar.Add($"Tipo Centro {modeloFormulario.name} actualizado.", Severity.Success);
+            Snackbar.Add($"Tipo Especialidad {modeloFormulario.name} actualizado.", Severity.Success);
             //MudDialog.Close(DialogResult.Ok(true)); // ✅ cierra y notifica
         }
     }
     //
-    private async Task<GridData<TipoCentroDto>>
-        LoadServerData(GridState<TipoCentroDto> state, CancellationToken ct)
+    private async Task<GridData<TipoEspecialidadDto>>
+        LoadServerData(GridState<TipoEspecialidadDto> state, CancellationToken ct)
     {
         //await Task.Delay(1000);//
         //Console.WriteLine("Misma consulta, evitando llamada API");
@@ -234,7 +231,7 @@
             _lastOrderSort == sort?.Descending
         )
         {
-            return new GridData<TipoCentroDto>(); // evita duplicado
+            return new GridData<TipoEspecialidadDto>(); // evita duplicado
         }
         _lastPage = state.Page;
         _lastPageSize = state.PageSize;
@@ -252,11 +249,11 @@
              SortDesc: sort?.Descending ?? false
             );
 
-        var response = await TipoCentroService.GetTipoCentroPaged(paramters);
+        var response = await TipoEspecialidadService.GetTipoEspecialidadPaged(paramters);
         if (!response.Success)
         {
             Snackbar.Add(response.ErrorMessage!, Severity.Error);
-            return new GridData<TipoCentroDto>
+            return new GridData<TipoEspecialidadDto>
             {
                 Items = [],
                 TotalItems = 0
@@ -264,7 +261,7 @@
         }
         modeloFormulario = null;//para inicar formulario
         EsEdicion = true;
-        return new GridData<TipoCentroDto>// mapea tu respuesta al formato que espera MudDataGrid
+        return new GridData<TipoEspecialidadDto>// mapea tu respuesta al formato que espera MudDataGrid
         {
             Items = response.Items,
             TotalItems = response.TotalCount
@@ -295,12 +292,12 @@
         }
     }
     // Evento que se dispara al hacer clic en cualquier fila de la tabla
-    private void OnFilaSeleccionada(DataGridRowClickEventArgs<TipoCentroDto> args)
+    private void OnFilaSeleccionada(DataGridRowClickEventArgs<TipoEspecialidadDto> args)
     {
         elementoOriginal = args.Item;
 
         // Creamos una copia para evitar modificar la tabla directamente antes de guardar
-        modeloFormulario = new TipoCentroDto
+        modeloFormulario = new TipoEspecialidadDto
         {
             Id = elementoOriginal.Id,
             name = elementoOriginal.name,
