@@ -82,44 +82,10 @@
         {
             <MudItem xs="12" md="5">
                 <MudPaper Class="pa-4 mx-auto" Outlined="true" Elevation="1" MaxWidth="100%">
-                    <MudForm @ref="form" Model="@modeloFormulario" OnValidSubmit="HandleSubmit">
-                        @* ── Separador de sección ────────────────────────── *@
-                        <div class="px-4">
-                            <MudIcon Icon="@Icons.Material.Filled.MedicalServices"
-                                     Style="font-size:30px; color:var(--mud-palette-primary);" />
-                            <span style="font-size:20px;">Especialidad - @(EsEdicion ? "Edicion" : "Nuevo ingreso")</span>
-                        </div>
-                        <MudGrid class="pa-4">
-                            <!-- Campo 1 Nombre -->
-                            @* espacio de total es 12*@
-                            <MudItem xs="12">
-                                <MudTextField T="string"
-                                              Label="Nombre"
-                                              @bind-Value="modeloFormulario.name"
-                                              Required="true"
-                                              RequiredError="El nombre es obligatorio" />
-                            </MudItem>
-                            <MudDivider Class="my-2" />
-                            <!-- Campo 2 Estado-->
-                            <MudItem xs="12" Class="d-flex align-center">
-                                <MudSwitch @bind-Value="modeloFormulario.isActive"
-                                           Color="Color.Success"
-                                           UncheckedColor="Color.Error"
-                                           Label="Estado"
-                                           LabelPlacement=Placement.Start />
-                            </MudItem>
-                        </MudGrid>
-
-                        <!-- Botón -->
-                        <MudButton Variant="Variant.Filled"
-                                   Color="Color.Primary"
-                                   Class="mt-4"
-                                   @onclick="Submit">
-                            @(EsEdicion ? "Actualizar" : "Registrar")
-                        </MudButton>
-
-                    </MudForm>
-
+                    <DataEntryTipoEspecialidad Modelo="@modeloFormulario"
+                                               EsEdicion="@EsEdicion"
+                                               OnValidSubmit="Submit"
+                                               OnCancel="LimpiarFormulario" />
                 </MudPaper>
             </MudItem>
         }
@@ -137,7 +103,6 @@
 
     private MudDataGrid<TipoEspecialidadDto>? grid;
     private CancellationTokenSource? _cts;
-    private MudForm? form;
 
     // Referencia al elemento original que se está editando
     private TipoEspecialidadDto? elementoOriginal;
@@ -145,7 +110,7 @@
     private TipoEspecialidadDto? modeloFormulario;
     private bool EsEdicion = true;
 
-    private async void NuevoTipo()
+    private void NuevoTipo()
     {
         modeloFormulario = new();
         EsEdicion = false;
@@ -153,10 +118,7 @@
 
     private async Task Submit()
     {
-        //Console.WriteLine($"Edicion?: {esEdicion}");
-        await form.ValidateAsync();
-
-        if (form.IsValid)
+        if (modeloFormulario is not null)
         {
             if (!EsEdicion)
             {
@@ -167,10 +129,6 @@
                 await EditSubmit();
             }
             await CargarDatos();
-        }
-        else
-        {
-            Snackbar.Add("Por favor, complete todos los campos requeridos.", Severity.Warning);
         }
     }
     //
@@ -304,6 +262,13 @@
             isActive = elementoOriginal.isActive
         };
         EsEdicion = true;
+    }
+
+    private Task LimpiarFormulario()
+    {
+        modeloFormulario = null;
+        EsEdicion = true;
+        return Task.CompletedTask;
     }
     private async Task CargarDatos()
     {

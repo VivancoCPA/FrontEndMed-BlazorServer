@@ -1,68 +1,34 @@
-# MedicalCareR2 — AGENTS.md
+# MedicalCareR2 - AGENTS.md
 
-## Overview
+## Scope and stack
 
-Blazor Interactive Server frontend (`.NET 10`, `net10.0`) consuming an external REST API. MudBlazor v9.* UI. Single-project solution with `.slnx` format.
+- Single-project Blazor Web App (`InteractiveServer`) in `MedicalCareWeb/` targeting `net10.0` with MudBlazor `9.*`.
+- This repo is frontend-only; API calls are made to an external backend via `HttpClient`.
+- Solution file is `.slnx` (`MedicalCareR2.slnx`), not a legacy `.sln`.
 
-**No backend code lives here** — this is purely the Blazor client. The API base URL is `http://localhost:5043/api/` (configured in `appsettings.Development.json`).
+## Run and verify
 
-## Architecture
+- Build: `dotnet build MedicalCareWeb\MedicalCareWeb.csproj`
+- Run default profile (`http`, `http://localhost:5228`): `dotnet run --project MedicalCareWeb`
+- Run explicit HTTPS profile (`https://localhost:7095`): `dotnet run --project MedicalCareWeb --launch-profile https`
+- There are currently no tests, lint, formatter, or CI workflow files in this repo.
 
-- Entrypoint: `MedicalCareWeb/Program.cs` — registers scoped `HttpClient`, MudBlazor, and services
-- Layout: `MainLayout.razor` with dark mode toggle, custom `PaletteDark`/`PaletteLight`
-- Navigation: `NavMenu.razor` (Catalogos group with Centros Medicos + Aseguradoras)
-- Pages use `MudDataGrid` with `ServerData` for server-side pagination
-- CRUD via MudBlazor dialogs (`DialogService.ShowAsync`)
+## Runtime wiring that is easy to break
 
-## Directory Layout
+- `Program.cs` throws on startup if `ApiSettings:BaseUrl` is missing/blank; `appsettings.Development.json` currently sets `http://localhost:5043/api/`.
+- `Program.cs` registers scoped `HttpClient` with `BaseAddress = ApiSettings:BaseUrl`; service implementations depend on relative endpoint strings.
+- MudBlazor providers (`MudDialogProvider`, `MudSnackbarProvider`, etc.) are defined in `Components/Layout/MainLayout.razor`; dialogs/snackbars will fail if removed.
+- App shell is in `Components/App.razor` and routes use `Components/Routes.razor` with `MainLayout` as default layout.
 
-| Path | Purpose |
-|------|---------|
-| `Models/{Domain}/` | DTOs per domain: `Dto`, `Create*RequestDto`, `Update*RequestDto` |
-| `Contracts/` | Service interfaces |
-| `Services/` | HTTP service implementations (many methods still `NotImplementedException`) |
-| `Common/` | Shared DTOs (`ApiResponse<T>`, `PaginatedResultDto<T>`, `ListedPagedDto`), file storage, helpers |
-| `Components/Pages/{Domain}/` | Razor pages with `MudDataGrid` + dialog-based CRUD |
-| `Shared/` | Reusable components: `CardKpi.razor`, `InputImg.razor` (logo upload) |
-| `Auth/`, `Infrastructure/` | Empty folders — not yet wired |
+## UI/data conventions
 
-## API Endpoints (hardcoded in Services)
+- `_Imports.razor` globally injects `IDialogService`, `ISnackbar`, and domain services; pages often use them without local `@inject`.
+- `MudDataGrid` server paging is used across catalog pages; grid page index is 0-based but API requests convert to 1-based (`state.Page + 1`).
+- Search handlers use debounce + cancellation-token patterns before reloading server data; preserve this behavior when editing list pages.
+- Codebase naming is Spanish domain language (`Aseguradora`, `Centro`, `TipoCentro`, `Medico`, etc.); follow existing terms for new DTOs/services/pages.
 
-| Service | Endpoints |
-|---------|-----------|
-| Aseguradora | `insurers`, `insurers/paged`, `insurers/{id}`, `insurers/{id}/toggle-status` |
-| Centro | `medical-centers/paged`, `medical-centers/{id}/toggle-status` |
-| TipoCentro | `center-types`, `center-types/lookup` |
+## Service layer status
 
-## Important Conventions & Gotchas
-
-- `_Imports.razor` globally injects `ISnackbar`, `IDialogService`, and all service interfaces — every page has them without explicit `@inject`
-- **MudDataGrid is 0-based** for pages, but the API expects **1-based** — `ListaAseguradoras.razor:414` adds `+ 1`
-- Search uses 400ms debounce with `CancellationTokenSource` cancel pattern
-- File upload: `InputImg.razor` converts `IBrowserFile` → `ArchivoDTO` via `ConvertirAArchivoDTO()`, then `AlmacenadorArchivosLocal` saves to `wwwroot/{contenedor}/`
-- `ApiSettings:BaseUrl` is **required** in config (throws `InvalidOperationException` if missing)
-- Solution uses `.slnx` format (not legacy `.sln`) — open with VS 2022+
-- `<Nullable>enable</Nullable>` and `<ImplicitUsings>enable</ImplicitUsings>`
-- `BlazorDisableThrowNavigationException` is set to `true` to suppress Blazor navigation errors
-
-## Developer Commands
-
-```powershell
-# Build
-dotnet build MedicalCareWeb\MedicalCareWeb.csproj
-
-# Run (development)
-dotnet run --project MedicalCareWeb
-
-# Run with explicit profile
-dotnet run --project MedicalCareWeb --launch-profile https
-```
-
-No tests, CI, linters, formatters, or typecheckers are configured.
-
-## Naming & Style
-
-- Code is in Spanish (domain terms: Aseguradora, Centro, TipoCentro, Archivo, Almacenador)
-- Service classes use primary constructor injection: `public class FooService(HttpClient _http) : IFooService`
-- `ApiResponse<T>` supports both constructor (`ApiResponse<T>(data, success, error)`) and object initializer
-- `PaginatedResultDto<T>` includes computed properties `TotalPages`, `HasPreviousPage`, `HasNextPage`
+- `Services/` contains the HTTP integrations; check these first when changing API contracts.
+- Not all interface methods are implemented yet: currently `AseguradoraService.GetAllAseguradoraAsync` and `CentroService.GetAllCentrosAsync` still throw `NotImplementedException`.
+- Endpoints currently used include insurers, medical-centers, center-types, specialties, and doctors (including `/paged` and `/{id}/toggle-status` variants).

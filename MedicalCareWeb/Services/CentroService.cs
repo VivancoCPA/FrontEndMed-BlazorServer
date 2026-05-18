@@ -1,7 +1,9 @@
 ﻿using MedicalCareWeb.Common;
 using MedicalCareWeb.Contracts;
+using MedicalCareWeb.Enum;
 using MedicalCareWeb.Models.Aseguradora;
 using MedicalCareWeb.Models.Centro;
+using MedicalCareWeb.Models.TipoCentro;
 
 namespace MedicalCareWeb.Services;
 
@@ -17,9 +19,22 @@ public class CentroService(HttpClient _http) : ICentroService
         return new ApiResponse<bool>(false, false, error);
     }
 
-    public Task<IEnumerable<CentroDto>> GetAllCentrosAsync()
+    public async Task<IEnumerable<CentroDto>> GetAllCentrosAsync(EnumStatus status)
     {
-        throw new NotImplementedException();
+        var url = "medical-centers";
+
+        if (status == EnumStatus.Activo)
+        {
+            url += "/lookup";
+        }
+        Console.WriteLine($"URL construida para obtener los centros: {url}");
+        var response = await _http.GetAsync(url);
+        if (!response.IsSuccessStatusCode)
+        {
+            // Manejar el error según sea necesario
+            throw new Exception($"Error al obtener los tipos de centro: {response.ReasonPhrase}");
+        }
+        return await _http.GetFromJsonAsync<IEnumerable<CentroDto>>(url) ?? Enumerable.Empty<CentroDto>();
     }
 
     public async Task<PaginatedResultDto<CentroDto>> GetCentroPaged(ListedPagedDto paginacion)

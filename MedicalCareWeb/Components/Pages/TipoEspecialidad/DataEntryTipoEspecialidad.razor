@@ -1,0 +1,77 @@
+@using MedicalCareWeb.Models.TipoEspecialidad
+
+<MudForm @ref="_form" Model="@Modelo">
+    <div class="dea-shell">
+        <div class="dea-section-label px-4">
+            <MudIcon Icon="@Icons.Material.Filled.MedicalServices"
+                     Style="font-size:14px; color:var(--mud-palette-primary);" />
+            Especialidad - @(EsEdicion ? "Edicion" : "Nuevo ingreso")
+        </div>
+
+        <MudGrid Spacing="2" Class="px-4">
+            <MudItem xs="12">
+                <MudTextField T="string"
+                              Label="Nombre"
+                              @bind-Value="Modelo.name"
+                              Required="true"
+                              RequiredError="El nombre es obligatorio"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Outlined.Badge"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              FullWidth="true" />
+            </MudItem>
+
+            <MudItem xs="12" Class="d-flex align-center">
+                <div class="dea-status-wrap">
+                    <div class="dea-status-pill @(Modelo.isActive ? "dea-active" : "dea-inactive")">
+                        <MudSwitch @bind-Value="Modelo.isActive"
+                                   Color="Color.Success"
+                                   UncheckedColor="Color.Error"
+                                   Size="Size.Small" />
+                        <span>@(Modelo.isActive ? "Activo" : "Inactivo")</span>
+                    </div>
+                </div>
+            </MudItem>
+        </MudGrid>
+
+        <div class="dea-actions pa-4">
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Default"
+                       OnClick="Cancel"
+                       Style="font-weight:600; text-transform:none;">
+                Cancelar
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@(EsEdicion ? Icons.Material.Filled.Save : Icons.Material.Filled.Add)"
+                       OnClick="Submit"
+                       Style="font-weight:600; text-transform:none; border-radius:8px; min-width:130px;">
+                @(EsEdicion ? "Actualizar" : "Registrar")
+            </MudButton>
+        </div>
+    </div>
+</MudForm>
+
+@code {
+    [Parameter, EditorRequired] public TipoEspecialidadDto Modelo { get; set; } = new();
+    [Parameter] public bool EsEdicion { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private MudForm? _form;
+
+    private async Task Submit()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Por favor completa los campos obligatorios.", Severity.Warning);
+            return;
+        }
+
+        await OnValidSubmit.InvokeAsync();
+    }
+
+    private Task Cancel() => OnCancel.InvokeAsync();
+}
