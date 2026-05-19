@@ -1,0 +1,120 @@
+.login-page {
+    min-height: calc(100vh - 96px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background:
+        radial-gradient(circle at 12% 10%, color-mix(in srgb, var(--mud-palette-primary) 12%, transparent) 0%, transparent 38%),
+        radial-gradient(circle at 88% 90%, color-mix(in srgb, var(--mud-palette-info) 12%, transparent) 0%, transparent 36%),
+        linear-gradient(160deg, #f6f9fd 0%, #eef3f9 100%);
+}
+
+.login-grid {
+    width: 100%;
+    max-width: 1120px;
+    display: grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap: 24px;
+}
+
+.login-brand,
+.login-form-card {
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--mud-palette-divider) 75%, white);
+    background: color-mix(in srgb, white 90%, var(--mud-palette-surface));
+}
+
+.login-brand {
+    padding: 34px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.login-brand-badge {
+    width: fit-content;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--mud-palette-primary) 12%, white);
+    color: var(--mud-palette-primary);
+}
+
+.login-title {
+    margin: 6px 0 0;
+    font-weight: 700;
+    letter-spacing: -.5px;
+    color: #163250;
+}
+
+.login-subtitle {
+    line-height: 1.6;
+    color: #35516f;
+    max-width: 55ch;
+}
+
+.login-feature-list {
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.login-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #2f4964;
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--mud-palette-surface) 88%, #f8fbff);
+}
+
+.login-form-wrap {
+    display: flex;
+    align-items: center;
+}
+
+.login-form-card {
+    width: 100%;
+}
+
+.login-actions-row {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.login-link {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+@media (max-width: 960px) {
+    .login-page {
+        padding: 14px;
+    }
+
+    .login-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .login-brand {
+        padding: 22px;
+    }
+
+    .login-actions-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

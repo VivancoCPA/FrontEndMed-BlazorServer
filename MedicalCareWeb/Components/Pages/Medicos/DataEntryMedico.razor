@@ -358,9 +358,9 @@
             request.Archivo = browserFile.ConvertirAArchivoDTO();
         }
         
-        string jsonString = JsonSerializer.Serialize(request);
-        // 2. Muestra la cadena JSON en el Snackbar
-        Snackbar.Add($"JsonUpdate: {jsonString}", Severity.Normal);
+        // string jsonString = JsonSerializer.Serialize(request);
+        // // 2. Muestra la cadena JSON en el Snackbar
+        // Snackbar.Add($"JsonUpdate: {jsonString}", Severity.Normal);
 
         var response = await MedicoService.UpdateMedicoAsync(doctorFormModel.Id, request);
         if (!response.Success)

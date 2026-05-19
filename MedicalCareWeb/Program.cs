@@ -1,3 +1,4 @@
+using Blazored.LocalStorage;
 using MedicalCareWeb.Common;
 using MedicalCareWeb.Components;
 using MedicalCareWeb.Contracts;
@@ -6,6 +7,13 @@ using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddAuthorizationCore();
+
+builder.Services.AddScoped<CustomAuthStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
+    sp.GetRequiredService<CustomAuthStateProvider>());
 
 var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"]!;
 
@@ -38,6 +46,7 @@ builder.Services.AddScoped<ICentroService, CentroService>();
 builder.Services.AddScoped<ITipoCentroService, TipoCentroService>();
 builder.Services.AddScoped<ITipoEspecialidadService, TipoEspecialidadService>();
 builder.Services.AddScoped<IMedicoService, MedicoService>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
 // Add MudBlazor services
 builder.Services.AddMudServices();

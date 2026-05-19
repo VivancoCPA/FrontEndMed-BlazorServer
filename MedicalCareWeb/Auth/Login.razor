@@ -1,0 +1,155 @@
+@page "/login"
+@using MedicalCareWeb.Models.Usuario
+@using System.Text.Json
+@inject IUsuarioService UsuarioService
+@inject NavigationManager Nav
+
+<div class="login-page">
+    <div class="login-grid">
+        <section class="login-brand">
+            <div class="login-brand-badge">
+                <MudIcon Icon="@Icons.Material.Filled.HealthAndSafety" Size="Size.Medium" />
+                Plataforma Clinica
+            </div>
+            <MudText Typo="Typo.h3" Class="login-title">MedicalCare</MudText>
+            <MudText Typo="Typo.subtitle1" Class="login-subtitle">
+                Gestion empresarial para redes medicas, centros de atencion y especialistas.
+            </MudText>
+
+            <div class="login-feature-list">
+                <div class="login-feature-item">
+                    <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Color="Color.Success" Size="Size.Small" />
+                    Seguridad por perfiles y trazabilidad operativa.
+                </div>
+                <div class="login-feature-item">
+                    <MudIcon Icon="@Icons.Material.Filled.QueryStats" Color="Color.Info" Size="Size.Small" />
+                    Control de indicadores en tiempo real.
+                </div>
+                <div class="login-feature-item">
+                    <MudIcon Icon="@Icons.Material.Filled.LocalHospital" Color="Color.Primary" Size="Size.Small" />
+                    Gestion centralizada de medicos y centros.
+                </div>
+            </div>
+        </section>
+
+        <section class="login-form-wrap">
+            <MudPaper Elevation="4" Class="login-form-card pa-6">
+                <MudText Typo="Typo.h5" Class="mb-1">Iniciar sesion</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+                    Ingrese con su usuario corporativo.
+                </MudText>
+
+                <MudForm @ref="_form" Model="_model">
+                    <MudTextField T="string"
+                                  Label="Usuario"
+                                  @bind-Value="_model.email"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  FullWidth="true"
+                                  Required="true"
+                                  RequiredError="El usuario es obligatorio"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Outlined.Person" />
+
+                    <MudTextField T="string"
+                                  Label="Contrasena"
+                                  @bind-Value="_model.password"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  FullWidth="true"
+                                  Required="true"
+                                  RequiredError="La contrasena es obligatoria"
+                                  InputType="@(_mostrarContrasena ? InputType.Text : InputType.Password)"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@(_mostrarContrasena ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                                  OnAdornmentClick="ToggleContrasena" />
+
+                    <div class="login-actions-row">
+                        <MudCheckBox T="bool" @bind-Value="_model.rememberme" Label="Recordarme" Color="Color.Primary" />
+                        <MudLink Href="#" Class="login-link">Olvide mi contrasena</MudLink>
+                    </div>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               Size="Size.Large"
+                               Class="mt-2"
+                               Disabled="_enviando"
+                               OnClick="Submit">
+                        @(_enviando ? "Validando..." : "Ingresar")
+                    </MudButton>
+                </MudForm>
+
+                <MudDivider Class="my-4" />
+
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center">
+                    Necesita ayuda? Contacte a soporte de TI.
+                </MudText>
+                @* ✅ Muestra lista de errores del backend *@
+                @if (errores.Count > 0)
+                {
+                    <div class="alert alert-danger">
+                        @if (errores.Count == 1)
+                        {
+                            <span>@errores[0]</span>
+                        }
+                        else
+                        {
+                            <ul class="mb-0">
+                                @foreach (var error in errores)
+                                {
+                                    <li>@error</li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                }
+
+            </MudPaper>
+        </section>
+    </div>
+</div>
+
+@code {
+    private MudForm? _form;
+    private readonly LoginDto _model = new();
+    private bool _mostrarContrasena;
+    private List<string> errores = [];
+    private bool _enviando;
+
+    private void ToggleContrasena()
+    {
+        _mostrarContrasena = !_mostrarContrasena;
+    }
+
+    private async Task Submit()
+    {
+        await _form!.ValidateAsync();
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Complete usuario y contrasena.", Severity.Warning);
+            return;
+        }
+
+        _enviando = true;
+        // string jsonString = JsonSerializer.Serialize(_model);
+        // Snackbar.Add($"Info, {jsonString}.", Severity.Info);
+        var (exitoso, listaErrores) = await UsuarioService.Login(_model);
+        if (exitoso)
+        {    
+            Snackbar.Add($"Bienvenido, {_model.email}.", Severity.Success);
+            //Nav.NavigateTo("/");
+        }
+        else
+        {    
+            errores = listaErrores;
+            //Snackbar.Add($"Error, {mensajeError}.", Severity.Error);
+        }
+
+        //await Task.Delay(600);
+        _enviando = false;
+        
+    }
+
+    
+}
