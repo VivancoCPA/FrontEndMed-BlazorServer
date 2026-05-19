@@ -1,5 +1,6 @@
 ﻿using MedicalCareWeb.Common;
 using MedicalCareWeb.Contracts;
+using MedicalCareWeb.Models.Aseguradora;
 using MedicalCareWeb.Models.Centro;
 using MedicalCareWeb.Models.Medico;
 
@@ -9,6 +10,59 @@ public class MedicoService(HttpClient _http, IAlmacenadorArchivos almacenadorArc
 {
     private readonly string contenedor = "avatar_medico";
 
+    public async Task<ApiResponse<bool>> CreateMedicoAsync(CreateMedicoRequestDto request)
+    {
+        if (request.Archivo is not null)
+        {
+            var url = await almacenadorArchivos.Almacenar(contenedor, request.Archivo);
+            request.photoUrl = url;
+        }
+
+        var response = await _http.PostAsJsonAsync("doctors", request);
+        if (response.IsSuccessStatusCode)
+            return new ApiResponse<bool>(true, true, string.Empty);
+
+        var error = await Helper.LeerErrorAsync(response);
+        //borramos el archivo guardado en contenedor si hubo error
+        if (request.Archivo is not null)
+        {
+            await almacenadorArchivos.Borrar(request.photoUrl, contenedor);
+        }
+        return new ApiResponse<bool>(false, false, error);
+    }
+    //
+    public async Task<ApiResponse<bool>> UpdateMedicoAsync(Guid id, UpdateMedicoRequestDto request)
+    {
+        var oldUrl = request.photoUrl;
+
+        if (request.Archivo is not null)
+        {
+            var url = await almacenadorArchivos.Almacenar(contenedor, request.Archivo);
+            request.photoUrl = url;
+        }
+        //
+        var response = await _http.PutAsJsonAsync($"doctors/{id}", request);
+        if (response.IsSuccessStatusCode)
+        {
+            //borramos el archivo anterior
+            if (oldUrl is not null && request.photoUrl != oldUrl)
+            {
+                await almacenadorArchivos.Borrar(oldUrl, contenedor);
+            }
+            return new ApiResponse<bool>(true, true, string.Empty);
+        }
+        //ERROR
+        var error = await Helper.LeerErrorAsync(response);
+        //borramos el archivo guardado en contenedor si hubo error
+        if (request.Archivo is not null)
+        {
+            await almacenadorArchivos.Borrar(request.photoUrl, contenedor);
+        }
+
+        return new ApiResponse<bool>(false, false, error);
+
+    }
+    //
     public async Task<PaginatedResultDto<MedicoDto>> GetMedicoPaged(ListedPagedDto paginacion)
     {
         var url = $"doctors/paged?page={paginacion.Page}&pageSize={paginacion.PageSize}";

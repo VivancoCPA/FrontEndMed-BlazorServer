@@ -22,7 +22,7 @@ namespace MedicalCareWeb.Models.Medico
     public bool isActive { get; set; } = true;
     public DateTime createdAt { get; set; } 
     public DateTime updatedAt { get; set; }
-    public List<MedicoCentroAfiliadoDto> Centers { get; set; } = new();
+    public List<MedicoCentroAfiliadoDto> Centers { get; set; } = [];
     }
     
 }

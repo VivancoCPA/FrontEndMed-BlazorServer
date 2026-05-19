@@ -28,6 +28,6 @@ namespace MedicalCareWeb.Models.Medico
         public IBrowserFile? FotoArchivo { get; set; }
         [NotMapped, JsonIgnore]
         public ArchivoDTO? Archivo { get; set; }
-        public List<MedicoCentroAfiliadoDto> Centers { get; set; } = new();
+        public List<MedicoCentroAfiliadoDto> Centers { get; set; } = [];
     }
 }

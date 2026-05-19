@@ -228,7 +228,29 @@
     private CancellationTokenSource? _cts;
 
     
-    void OnSearchChanged() { }
+    private async Task OnSearchChanged(string value)
+    {
+        // Lógica de búsqueda aquí
+        if (grid is null)
+            return; // 👈 evita crash
+
+        _cts?.Cancel(); // cancela llamada anterior
+        _cts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(400, _cts.Token); // ⏱ espera (ajustable)
+            //Console.WriteLine($"Search changed: {value}");
+            _searchString = value;
+            grid.NavigateTo(0); // 👈 vuelve a página 1
+            await grid.ReloadServerData(); // 🔥 dispara el filtro en backend = LoadServerData
+        }
+        catch (TaskCanceledException)
+        {
+            // normal: usuario sigue escribiendo
+        }
+    }
+    //
 
     private async void NuevoCentro()
     {
@@ -273,7 +295,7 @@
         var parameter = new DialogParameters
         {
             //clonamos para no modificar el original hasta que se guarde
-            { "Modelo", new UpdateMedicoRequestDto
+            { "doctorFormModel", new UpdateMedicoRequestDto
                 {
                     Id = item.Id,
                     name = item.name,
@@ -281,29 +303,12 @@
                     email = item.email,
                     phone = item.phone,
                     SpecialtyId = item.SpecialtyId,
+                    SpecialtyName = item.SpecialtyName,
                     photoUrl = item.photoUrl,
                     isVet = item.isVet,
                     register = item.register,
                     isActive = item.isActive,
-                    Centers = 
-                    [
-                        new MedicoCentroAfiliadoDto
-                        {
-                            Id=Guid.NewGuid(),
-                            CentroId = Guid.NewGuid(),
-                            Name = "UNo",
-                            OfficeNumber = "333",
-                            WorkSchedule = "Lunes",
-                        },
-                        new MedicoCentroAfiliadoDto
-                        {
-                            Id=Guid.NewGuid(),
-                            CentroId = Guid.NewGuid(),
-                            Name = "DOS",
-                            OfficeNumber = "333",
-                            WorkSchedule = "Martes",
-                        }
-                    ]
+                    Centers = item.Centers
                 }
             },
             { "EsEdicion", true }

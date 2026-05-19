@@ -4,6 +4,7 @@
 @using MedicalCareWeb.Models.TipoEspecialidad
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
+@using System.Text.Json
 
 <MudForm @ref="_form" Model="@doctorFormModel">
     <div class="dea-shell">
@@ -28,10 +29,19 @@
                                             <MudTextField T="string" @bind-Value="doctorFormModel.lastName" Label="Apellido" Variant="Variant.Outlined" Margin="Margin.Dense" FullWidth="true" Required="true" RequiredError="El apellido es obligatorio" />
                                         </MudItem>
                                         <MudItem xs="12" sm="7">
-                                            <MudSelect T="string" @bind-Value="doctorFormModel.SpecialtyName" Label="Especialidad" Placeholder="Seleccione Especialidad" Variant="Variant.Outlined" Margin="Margin.Dense" FullWidth="true" Required="true" RequiredError="La especialidad es obligatoria">
+                                            <MudSelect T="TipoEspecialidadDto" 
+                                                       @bind-Value="selectedEspecialidadObject" 
+                                                       Label="Especialidad" 
+                                                       Placeholder="Seleccione Especialidad" 
+                                                       Variant="Variant.Outlined" 
+                                                       Margin="Margin.Dense" 
+                                                       FullWidth="true" 
+                                                       Required="true" 
+                                                       RequiredError="La especialidad es obligatoria"
+                                                       >
                                                 @foreach (var specialty in specialtyOptions)
                                                 {
-                                                    <MudSelectItem T="string" Value="@specialty.Id.ToString()">@specialty.name</MudSelectItem>
+                                                            <MudSelectItem T="TipoEspecialidadDto" Value="@specialty">@specialty.name</MudSelectItem>
                                                 }
                                             </MudSelect>
                                         </MudItem>
@@ -184,7 +194,12 @@
                     <MudText Typo="Typo.body2" Class="mb-2 mt-2">Vincular nuevo centro</MudText>
                     <MudGrid Spacing="2">
                         <MudItem xs="12" md="9">
-                                    <MudSelect T="CentroDto" @bind-Value="selectedCenterObject" Label="Buscar centro" Variant="Variant.Outlined" Margin="Margin.Dense" FullWidth="true">
+                            <MudSelect T="CentroDto" 
+                                       @bind-Value="selectedCenterObject" 
+                                       Label="Buscar centro" 
+                                       Variant="Variant.Outlined" 
+                                       Margin="Margin.Dense" 
+                                       FullWidth="true">
                                 @foreach (var centerOption in availableCenters)
                                 {
                                             <MudSelectItem T="CentroDto" Value="@centerOption">@centerOption.Name</MudSelectItem>
@@ -236,8 +251,8 @@
     [Parameter, EditorRequired]
     public UpdateMedicoRequestDto doctorFormModel { get; set; } = new();
 
-    [Parameter]
-    public UpdateMedicoRequestDto? Modelo { get; set; }
+    // [Parameter]
+    // public UpdateMedicoRequestDto? Modelo { get; set; }
 
     [Parameter]
     public bool EsEdicion { get; set; }
@@ -248,6 +263,8 @@
     private IEnumerable<TipoEspecialidadDto> specialtyOptions = [];
     private IEnumerable<CentroDto> availableCenters = [];
     CentroDto? selectedCenterObject;
+    TipoEspecialidadDto? selectedEspecialidadObject;
+    List<MedicoCentroAfiliadoDto> centroAfilido = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -256,12 +273,12 @@
 
     protected override void OnParametersSet()
     {
-        if (Modelo is not null)
-        {
-            doctorFormModel = Modelo;
-        }
+        // if (Modelo is not null)
+        // {
+        //     doctorFormModel = Modelo;
+        // }
 
-        doctorFormModel.Centers ??= [];
+        // doctorFormModel.Centers ??= [];
     }
 
     private async Task Submit()
@@ -272,10 +289,91 @@
             Snackbar.Add("Por favor completa los campos obligatorios.", Severity.Warning);
             return;
         }
+        if (EsEdicion)
+            await EditSubmit();
 
-        MudDialog?.Close(DialogResult.Ok(doctorFormModel));
+        else
+            await NewSubmit();
+
+        //MudDialog?.Close(DialogResult.Ok(doctorFormModel));
     }
 
+    private async Task NewSubmit()
+    {
+
+        var request = new CreateMedicoRequestDto
+        {
+            name = doctorFormModel.name,
+            lastName = doctorFormModel.lastName,
+            SpecialtyId = selectedEspecialidadObject!.Id,
+            phone = doctorFormModel.phone,
+            email = doctorFormModel.email,
+            register = doctorFormModel.register,
+            photoUrl = doctorFormModel.photoUrl,
+            isActive = doctorFormModel.isActive,
+            isVet = doctorFormModel.isVet,
+            Centers = centroAfilido
+        };
+
+        var browserFile = doctorFormModel.FotoArchivo;
+        if (browserFile is not null)
+        {
+            request.Archivo = browserFile.ConvertirAArchivoDTO();
+        }
+
+        var response = await MedicoService.CreateMedicoAsync(request);
+        if (!response.Success)
+        {
+            Snackbar.Add($"Error: {response.ErrorMessage}", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add($"Medico \"{doctorFormModel.name}\" registrado correctamente.", Severity.Success);
+            MudDialog?.Close(DialogResult.Ok(true));
+        }
+    }
+    //
+    private async Task EditSubmit()
+    {
+        centroAfilido = doctorFormModel.Centers;
+
+        var request = new UpdateMedicoRequestDto
+        {
+            Id = doctorFormModel.Id,
+            name = doctorFormModel.name,
+            lastName = doctorFormModel.lastName,
+            email = doctorFormModel.email,
+            phone = doctorFormModel.phone,
+            SpecialtyId = selectedEspecialidadObject!.Id,
+            photoUrl = doctorFormModel.photoUrl,
+            isVet = doctorFormModel.isVet,
+            register = doctorFormModel.register,
+            isActive = doctorFormModel.isActive,
+            Centers = centroAfilido
+        };
+
+        var browserFile = doctorFormModel.FotoArchivo;
+        if (browserFile is not null)
+        {
+            request.Archivo = browserFile.ConvertirAArchivoDTO();
+        }
+        
+        string jsonString = JsonSerializer.Serialize(request);
+        // 2. Muestra la cadena JSON en el Snackbar
+        Snackbar.Add($"JsonUpdate: {jsonString}", Severity.Normal);
+
+        var response = await MedicoService.UpdateMedicoAsync(doctorFormModel.Id, request);
+        if (!response.Success)
+        {
+            Snackbar.Add($"Error: {response.ErrorMessage}", Severity.Error);
+        }
+        else
+        {
+            Snackbar.Add($"Medico \"{doctorFormModel.name}\" actualizado.", Severity.Success);
+            MudDialog?.Close(DialogResult.Ok(true));
+        }
+    }
+    //
     private void Cancel() => MudDialog?.Cancel();
 
     private Task OnImagenSeleccionada(IBrowserFile archivo)
@@ -314,9 +412,9 @@
     private void AddSelectedCenter()
     {
         if (selectedCenterObject is null)
-        {
-            return;
-        }
+         {
+             return;
+         }
 
         if (doctorFormModel.Centers.Any(x => x.Id == selectedCenterObject.Id))
         {
@@ -327,7 +425,7 @@
 
         doctorFormModel.Centers.Add(new MedicoCentroAfiliadoDto
         {
-            
+
             Id = selectedCenterObject.Id,
             Name = selectedCenterObject.Name
 
@@ -340,5 +438,18 @@
     {
         specialtyOptions = await TipoEspecialidadService.GetAllTipoEspecialidadAsync(EnumStatus.Activo);
         availableCenters = await CentroService.GetAllCentrosAsync(EnumStatus.Activo);
+        if (EsEdicion)
+        {
+            // Buscamos el objeto exacto dentro de las opciones usando el Id guardado en tu DTO de edición
+            selectedEspecialidadObject = specialtyOptions
+                .FirstOrDefault(x => x.Id == doctorFormModel.SpecialtyId);
+
+                // selectedEspecialidadObject = new TipoEspecialidadDto
+                // {
+                //     Id = doctorFormModel.SpecialtyId,
+                //     name = doctorFormModel.SpecialtyName
+                // };
+        }
+        StateHasChanged();
     }
 }
