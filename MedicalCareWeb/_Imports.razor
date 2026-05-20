@@ -1,6 +1,7 @@
 ﻿@using System.Net.Http
 @using System.Net.Http.Json
 @using MedicalCareWeb.Contracts
+@using MedicalCareWeb.Services
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
@@ -12,16 +13,18 @@
 @using MudBlazor.Services
 @using MedicalCareWeb.Common
 @using MedicalCareWeb.Shared
-@using MedicalCareWeb
 @using MedicalCareWeb.Components
 @using MedicalCareWeb.Components.Layout
+@using MedicalCareWeb
 
 
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject ToastService Toast
 
 @inject IAseguradoraService AseguradoraService
 @inject ICentroService CentroService
 @inject ITipoCentroService TipoCentroService
 @inject ITipoEspecialidadService TipoEspecialidadService
 @inject IMedicoService MedicoService
+@inject IUsuarioService UsuarioService

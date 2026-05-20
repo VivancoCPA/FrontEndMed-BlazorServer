@@ -40,6 +40,9 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// ✅ Singleton porque mantiene estado global de eventos
+builder.Services.AddSingleton<ToastService>();
+
 builder.Services.AddScoped<IAlmacenadorArchivos, AlmacenadorArchivosLocal>();
 builder.Services.AddScoped<IAseguradoraService, AseguradoraService> ();
 builder.Services.AddScoped<ICentroService, CentroService>();

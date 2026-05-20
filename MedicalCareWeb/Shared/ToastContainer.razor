@@ -1,0 +1,85 @@
+﻿@using MedicalCareWeb.Services
+@* Components/Shared/ToastContainer.razor *@
+@implements IDisposable
+@inject ToastService ToastService
+
+<div class="toast-container">
+    @foreach (var toast in _toasts)
+    {
+        <div class="toast-item toast-@toast.Tipo.ToString().ToLower() @(toast.Visible ? "toast-show" : "toast-hide")">
+            <div class="toast-icono">
+                @switch (toast.Tipo)
+                {
+                    case ToastTipo.Exito:
+                        <span>✔</span>
+                        break;
+                    case ToastTipo.Error:
+
+                        <span>✖</span>
+                        break;
+                    case ToastTipo.Advertencia:
+
+                        <span>⚠</span>
+                        break;
+                    case ToastTipo.Info:
+
+                        <span>ℹ</span>
+                        break;
+                }
+            </div>
+            <span class="toast-mensaje">@toast.Mensaje</span>
+            <button class="toast-cerrar" @onclick="() => Cerrar(toast)">×</button>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ToastItem> _toasts = [];
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnMostrar += MostrarToast;
+    }
+
+    private async void MostrarToast(ToastNotification notificacion)
+    {
+        var item = new ToastItem
+        {
+            Id = notificacion.Id,
+            Mensaje = notificacion.Mensaje,
+            Tipo = notificacion.Tipo,
+            Visible = true
+        };
+
+        _toasts.Add(item);
+        await InvokeAsync(StateHasChanged);
+
+        // Auto-cerrar después de la duración
+        await Task.Delay(notificacion.DuracionMs);
+        await Cerrar(item);
+    }
+
+    private async Task Cerrar(ToastItem toast)
+    {
+        toast.Visible = false;
+        await InvokeAsync(StateHasChanged);
+
+        await Task.Delay(400); // Espera animación de salida
+        _toasts.Remove(toast);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnMostrar -= MostrarToast;
+    }
+
+    // Clase interna para manejar estado de visibilidad
+    private class ToastItem
+    {
+        public Guid Id { get; set; }
+        public string Mensaje { get; set; } = string.Empty;
+        public ToastTipo Tipo { get; set; }
+        public bool Visible { get; set; }
+    }
+}

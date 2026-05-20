@@ -1,0 +1,297 @@
+﻿@page "/usuarios"
+@using MedicalCareWeb.Models.Usuario
+
+<MudContainer Fixed="true">
+     <MudDataGrid T="UsuarioDto"
+                 Dense="true"
+                 @ref="grid"
+                 Hover="true"
+                 Elevation="3"
+                 RowsPerPage="10"
+                 Height="500px"
+                 ServerData="LoadServerData"
+                 Style="border-radius: 12px; overflow: hidden;">
+        @* ── Spinner de carga ── *@
+        <LoadingContent>
+            <div class="d-flex flex-column align-center justify-center" style="height:200px; gap:12px;">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Cargando Usuarios...</MudText>
+            </div>
+        </LoadingContent>
+        @* ── Barra de herramientas ── *@
+        <ToolBarContent>
+            <div class="d-flex align-center" style="gap:8px;">
+                <MudIcon Icon="@Icons.Material.Filled.SupervisedUserCircle"
+                         Color="Color.Primary"
+                         Size="Size.Medium" />
+                <MudText Typo="Typo.h6" Style="font-weight:700; letter-spacing:-.3px;">
+                    Usuarios
+                </MudText>
+            </div>
+
+            <MudSpacer />
+
+            <MudTextField T="string"
+                          Placeholder="Buscar..."
+                          ValueChanged="OnSearchChanged"
+                          Adornment="Adornment.Start"
+                          Immediate="true"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          IconSize="Size.Small"
+                          Style="min-width:240px;"
+                          Class="mr-3" />
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.AddBusiness"
+                       Style="border-radius:8px; font-weight:600; text-transform:none; font-size:13px;"
+                       OnClick="NuevoCentro">
+                Nuevo
+            </MudButton>
+        </ToolBarContent>
+         @* ── Columnas ── *@
+        <Columns>
+            @* Logo *@
+            <TemplateColumn Title="Logo"
+                            HeaderStyle="@_HeaderStyle"
+                            Sortable="false"
+                            CellStyle="width:80px; text-align:center;">
+                <CellTemplate>
+                    @if (!string.IsNullOrWhiteSpace(context.Item.photoUrl))
+                    {
+                        <MudAvatar Style="width:40px; height:40px; border:2px solid var(--mud-palette-primary-lighten);">
+                            <MudImage Src="@context.Item.photoUrl"
+                                      Alt="@context.Item.name"
+                                      ObjectFit="ObjectFit.Cover"
+                                      Width="40"
+                                      Height="40" />
+                        </MudAvatar>
+                    }
+                    else
+                    {
+                        <MudAvatar Color="Color.Primary"
+                                   Style="width:40px; height:40px; font-size:14px; font-weight:700;">
+                            @(context.Item.name.Length > 0 ? context.Item.name[0].ToString().ToUpper() : "?")
+                        </MudAvatar>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            @* Nombre *@
+            <PropertyColumn Property="x => x.name"
+                            HeaderStyle="@_HeaderStyle"
+                            Title="Nombre"
+                            Sortable="true">
+                <CellTemplate>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">
+                        @context.Item.name
+                    </MudText>
+                </CellTemplate>
+            </PropertyColumn>
+            @* Apellido *@
+            <PropertyColumn Property="x => x.lastName"
+                            HeaderStyle="@_HeaderStyle"
+                            Title="Dirección"
+                            Sortable="false">
+                <CellTemplate>
+                    <div class="d-flex align-center" style="gap:4px;">
+                        <MudIcon Size="Size.Small"
+                                 Color="Color.Info" />
+                        <MudText Typo="Typo.body2">@context.Item.lastName</MudText>
+                    </div>
+                </CellTemplate>
+            </PropertyColumn>
+            @* Email *@
+            <PropertyColumn Property="x => x.email"
+                            HeaderStyle="@_HeaderStyle"
+                            Title="Email"
+                            Sortable="false">
+                <CellTemplate>
+                    <div class="d-flex align-center" style="gap:4px;">
+                        <MudIcon Icon="@Icons.Material.Outlined.Email"
+                                 Size="Size.Small"
+                                 Color="Color.Secondary" />
+                        <MudText Typo="Typo.body2">@context.Item.email</MudText>
+                    </div>
+                </CellTemplate>
+            </PropertyColumn>
+            @* Fecha *@
+            <PropertyColumn Property="x => x.dateOfBirth"
+                            HeaderStyle="@_HeaderStyle"
+                            Title="F. Nacimiento"
+                            Sortable="false">
+                <CellTemplate>
+                    <div class="d-flex align-center" style="gap:4px;">
+                        <MudIcon Icon="@Icons.Material.Outlined.Cake"
+                                 Size="Size.Small"
+                                 Color="Color.Secondary" />
+                        <MudText Typo="Typo.body2">@context.Item.dateOfBirth</MudText>
+                    </div>
+                </CellTemplate>
+            </PropertyColumn>
+            @* Acciones *@
+            <TemplateColumn Title="Acciones"
+                            HeaderStyle="@_HeaderStyle"
+                            Sortable="false"
+                            CellStyle="width:130px;">
+                <CellTemplate>
+                    <div class="d-flex align-center" style="gap:2px;">
+                        <MudTooltip Text="Editar">
+                            <MudIconButton Icon="@Icons.Material.Filled.EditNote"
+                                           Color="Color.Info"
+                                           Size="Size.Small"
+                                           OnClick="@(() => EditarTipo(context.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Text="@(!context.Item.isLockedOut ? "Desactivar" : "Activar")">
+                            <MudSwitch T="bool"
+                                       Value="!context.Item.isLockedOut"
+                                       Color="Color.Success"
+                                       UncheckedColor="Color.Error"
+                                       Size="Size.Small"
+                                       ValueChanged="@(async v => await Desactivar(context.Item))" />
+                        </MudTooltip>
+                        <MudChip T="string"
+                                 Color="@(!context.Item.isLockedOut ? Color.Success : Color.Error)"
+                                 Size="Size.Small"
+                                 Variant="Variant.Text">
+                            @(!context.Item.isLockedOut ? "Activo" : "Inactivo")
+                        </MudChip>
+                    </div>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        @* ── Paginador ── *@
+        <PagerContent>
+            <MudDataGridPager T="UsuarioDto"
+                              ShowPageSizeSelector="true"
+                              PageSizeOptions="new int[] { 5, 10, 20, 50 }" />
+        </PagerContent>
+     </MudDataGrid>
+</MudContainer>
+
+@code {
+    private string? _searchString;
+    private int? _lastPage;
+    private int? _lastPageSize;
+    private string? _lastSearch;
+    private string? _lastColSort;
+    private bool? _lastOrderSort;
+    private string _HeaderStyle = "background-color: var(--mud-palette-primary) !important; color: white !important; font-weight: bold; height: 40px;";
+
+    private MudDataGrid<UsuarioDto>? grid;
+    private CancellationTokenSource? _cts;
+
+    void NuevoCentro() { }
+
+    void OnSearchChanged() { }
+
+    private async Task Desactivar(UsuarioDto tipo)
+    {
+        //Configurar el cuadro de diálogo
+        var options = new DialogOptions { CloseOnEscapeKey = true, Position = DialogPosition.TopCenter, CloseButton = true };
+        bool? result = await DialogService.ShowMessageBoxAsync(
+            @tipo.isLockedOut ? "Confirmar Desactivacion" : "Confirmar Activacion",
+            $"¿Estás seguro de que deseas {(tipo.isLockedOut ? "Desactivar" : "Activar")} Usuario: {tipo.name} , {tipo.lastName}?",
+            yesText: @tipo.isLockedOut ? "Desactivar" : "Activar",
+            cancelText: "Cancelar",
+            options: options
+        );
+
+        if (result == true)
+        {
+            // Llamar a la API para eliminar el centro
+            var (exitoso, listaErrores) = await UsuarioService.ToggleUsuarioAsync(tipo.Id);
+            if (!exitoso)
+            {
+                Toast.Errores(listaErrores);
+                //Snackbar.Add(response.ErrorMessage!, Severity.Error);
+
+            }
+            else
+            {
+                // API exitosa — confirmar el nuevo valor
+                Toast.Exito($"Aseguradora {tipo.name}, {tipo.lastName} actualizada.");
+                //Snackbar.Add($"Aseguradora {tipo.Name} actualizada.", Severity.Success);
+            }
+            // refresca tu lista de centros
+        }
+        await CargarDatos();
+    }
+
+    private async void EditarTipo(UsuarioDto item)
+    { 
+        await CargarDatos();
+    }
+
+    private async Task<GridData<UsuarioDto>>
+        LoadServerData(GridState<UsuarioDto> state, CancellationToken ct)
+    {
+        //await Task.Delay(1000);//
+
+        var sort = state.SortDefinitions.FirstOrDefault();
+
+        if (_lastPage == state.Page &&
+            _lastPageSize == state.PageSize &&
+            _lastSearch == _searchString &&
+            _lastColSort == sort?.SortBy &&
+            _lastOrderSort == sort?.Descending
+        )
+        {
+            return new GridData<UsuarioDto>(); // evita duplicado
+        }
+        _lastPage = state.Page;
+        _lastPageSize = state.PageSize;
+        _lastSearch = _searchString;
+        _lastColSort = sort?.SortBy;
+        _lastOrderSort = sort?.Descending;
+        // ⚠️ Mud usa Page 0-based → tu API usa 1-based
+        var page = state.Page + 1;
+        var paramters = new ListedPagedDto
+            (
+             Page: page,
+             PageSize: state.PageSize,
+             Search: _searchString,
+             SortBy: sort?.SortBy,
+             SortDesc: sort?.Descending ?? false
+            );
+
+        var response = await UsuarioService.GetUsuarioPaged(paramters);
+
+        if (!response.Success)
+        {
+            Snackbar.Add(response.ErrorMessage!, Severity.Error);
+        }
+
+        if (response.Items is null)
+        {
+            return new GridData<UsuarioDto>
+            {
+                Items = [],
+                TotalItems = 0
+            };
+        }
+        ;
+
+        return new GridData<UsuarioDto>// mapea tu respuesta al formato que espera MudDataGrid
+        {
+            Items = response.Items,
+            TotalItems = response.TotalCount
+        };
+    }
+    
+    private async Task CargarDatos()
+    {
+        await InvokeAsync(async () =>
+        {
+            if (grid is not null)
+            {
+                _lastPage = null; //asegurar que se recarga para que pase la validacion inicial
+                grid.NavigateTo(0);              // sync
+                await grid.ReloadServerData();   // async
+                StateHasChanged();
+            }
+        });
+    }
+
+}

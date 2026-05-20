@@ -1,0 +1,118 @@
+﻿@page "/grupos"
+
+@using MedicalCareWeb.Models.Grupo
+@using MudBlazor
+
+<MudGrid>
+
+    @foreach (var grupo in Grupos)
+    {
+        <MudItem xs="12" sm="6" md="4">
+
+            <MudCard Elevation="4" Class="pa-4 rounded-lg">
+
+                <MudCardContent>
+
+                    <!-- Nombre Grupo -->
+                    <MudText Typo="Typo.h6">
+                        @grupo.NombreGrupo
+                    </MudText>
+
+                    <!-- Creador -->
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Creado por: @grupo.Creador
+                    </MudText>
+
+                    <MudDivider Class="my-3" />
+
+                    <!-- Integrantes -->
+                    <MudStack Row="true"
+                              Spacing="1"
+                              AlignItems="AlignItems.Center">
+
+                        <MudAvatarGroup Max="4" Spacing="5">
+
+                            @foreach (var integrante in grupo.Integrantes)
+                            {
+                                <MudAvatar Size="Size.Medium">
+                                    <MudTooltip Text="@integrante.Nombre">
+                                        <MudImage Src="@integrante.AvatarUrl" Alt="@integrante.Nombre" />
+                                    </MudTooltip>
+                                </MudAvatar>
+                            }
+
+                        </MudAvatarGroup>
+
+                        <MudText Typo="Typo.caption">
+                            (@grupo.Integrantes.Count integrantes)
+                        </MudText>
+
+                    </MudStack>
+
+                </MudCardContent>
+
+                <MudCardActions>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true">
+                        Ver Grupo
+                    </MudButton>
+
+                </MudCardActions>
+
+            </MudCard>
+
+        </MudItem>
+    }
+
+</MudGrid>
+
+@code {
+
+    private List<GrupoDto> Grupos = new()
+    {
+        new()
+        {
+            NombreGrupo = "Equipo Backend",
+            Creador = "Antonio",
+            Integrantes = new()
+            {
+                new()
+                {
+                    Nombre = "Juan",
+                    AvatarUrl = "https://localhost:7095/avatar_medico/abd888b3-3c16-43b6-a08e-6ebc4c1fabc3.jpg"
+                },
+                new()
+                {
+                    Nombre = "María",
+                    AvatarUrl = "https://localhost:7095/avatar_medico/8a47fbb4-09c8-4732-a8db-141473510fcf.jpg"
+                },
+                new()
+                {
+                    Nombre = "Luis",
+                    AvatarUrl = "https://localhost:7095/avatar_medico/abd888b3-3c16-43b6-a08e-6ebc4c1fabc3.jpg"
+                }
+            }
+        },
+
+        new()
+        {
+            NombreGrupo = "Equipo Frontend",
+            Creador = "Carlos",
+            Integrantes = new()
+            {
+                new()
+                {
+                    Nombre = "Ana",
+                    AvatarUrl = "https://localhost:7095/avatar_medico/8a47fbb4-09c8-4732-a8db-141473510fcf.jpg"
+                },
+                new()
+                {
+                    Nombre = "Pedro",
+                    AvatarUrl = "https://localhost:7095/avatar_medico/abd888b3-3c16-43b6-a08e-6ebc4c1fabc3.jpg"
+                }
+            }
+        }
+    };
+}

@@ -1,8 +1,10 @@
 @page "/login"
 @using MedicalCareWeb.Models.Usuario
 @using System.Text.Json
+@using MedicalCareWeb.Services
 @inject IUsuarioService UsuarioService
 @inject NavigationManager Nav
+
 
 <div class="login-page">
     <div class="login-grid">
@@ -85,7 +87,8 @@
                 <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center">
                     Necesita ayuda? Contacte a soporte de TI.
                 </MudText>
-                @* ✅ Muestra lista de errores del backend *@
+               
+              @*   
                 @if (errores.Count > 0)
                 {
                     <div class="alert alert-danger">
@@ -104,7 +107,7 @@
                         }
                     </div>
                 }
-
+ *@
             </MudPaper>
         </section>
     </div>
@@ -127,7 +130,8 @@
         await _form!.ValidateAsync();
         if (!_form.IsValid)
         {
-            Snackbar.Add("Complete usuario y contrasena.", Severity.Warning);
+            //Snackbar.Add("Complete usuario y contrasena.", Severity.Warning);
+            Toast.Advertencia("Complete usuario y contrasena.");
             return;
         }
 
@@ -137,12 +141,15 @@
         var (exitoso, listaErrores) = await UsuarioService.Login(_model);
         if (exitoso)
         {    
-            Snackbar.Add($"Bienvenido, {_model.email}.", Severity.Success);
+            Toast.Exito($"Bienvenido, {_model.email}.");  // ✅
+
+            //Snackbar.Add($"Bienvenido, {_model.email}.", Severity.Success);
             //Nav.NavigateTo("/");
         }
         else
         {    
             errores = listaErrores;
+            Toast.Errores(errores);
             //Snackbar.Add($"Error, {mensajeError}.", Severity.Error);
         }
 

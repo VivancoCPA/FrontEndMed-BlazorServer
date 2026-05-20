@@ -8,6 +8,7 @@ public record PaginatedResultDto<T>
     int PageSize,
     int TotalCount,
     bool Success = true,
+    List<string> Errores = null!,
     string? ErrorMessage = null!
     ) where T : class
     {
@@ -15,4 +16,5 @@ public record PaginatedResultDto<T>
         public bool HasPreviousPage => Page > 1;
         public bool HasNextPage => Page < TotalPages;
     }
+    
 
