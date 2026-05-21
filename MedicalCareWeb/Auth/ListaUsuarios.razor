@@ -81,6 +81,7 @@
             @* Nombre *@
             <PropertyColumn Property="x => x.name"
                             HeaderStyle="@_HeaderStyle"
+                            CellStyle="width:180px;"
                             Title="Nombre"
                             Sortable="true">
                 <CellTemplate>
@@ -92,7 +93,8 @@
             @* Apellido *@
             <PropertyColumn Property="x => x.lastName"
                             HeaderStyle="@_HeaderStyle"
-                            Title="Dirección"
+                            CellStyle="width:250px;"
+                            Title="Apellido"
                             Sortable="false">
                 <CellTemplate>
                     <div class="d-flex align-center" style="gap:4px;">
@@ -102,41 +104,63 @@
                     </div>
                 </CellTemplate>
             </PropertyColumn>
-            @* Email *@
-            <PropertyColumn Property="x => x.email"
+            @* Grupo Familiar *@
+            <PropertyColumn Property="x => x.familyGroupName"
                             HeaderStyle="@_HeaderStyle"
-                            Title="Email"
+                            CellStyle="width:250px;"
+                            Title="Grupo Familiar"
                             Sortable="false">
                 <CellTemplate>
                     <div class="d-flex align-center" style="gap:4px;">
-                        <MudIcon Icon="@Icons.Material.Outlined.Email"
+                        <MudIcon Icon="@Icons.Material.Outlined.Group"
                                  Size="Size.Small"
-                                 Color="Color.Secondary" />
-                        <MudText Typo="Typo.body2">@context.Item.email</MudText>
+                                 Color="Color.Info" />
+                        <MudText Typo="Typo.body2">@context.Item.familyGroupName</MudText>
                     </div>
                 </CellTemplate>
             </PropertyColumn>
-            @* Fecha *@
-            <PropertyColumn Property="x => x.dateOfBirth"
-                            HeaderStyle="@_HeaderStyle"
-                            Title="F. Nacimiento"
-                            Sortable="false">
+            @* Aseguradoras *@
+            <TemplateColumn Title="Aseguradoras" Sortable="false" Filterable="false" CellStyle="width:220px;" HeaderStyle="@_HeaderStyle">
                 <CellTemplate>
-                    <div class="d-flex align-center" style="gap:4px;">
-                        <MudIcon Icon="@Icons.Material.Outlined.Cake"
-                                 Size="Size.Small"
-                                 Color="Color.Secondary" />
-                        <MudText Typo="Typo.body2">@context.Item.dateOfBirth</MudText>
-                    </div>
+                    <MudStack Row="true">
+                        <!-- MudAvatarGroup agrupa y estila los avatares automáticamente -->
+                        <MudAvatarGroup Max="2" Spacing="2" MaxColor="Color.Dark" MaxSize="Size.Small" MaxAvatarClass="ml-5">
+                            @if (context.Item.Insurances != null && context.Item.Insurances.Any())
+                            {   
+                                @foreach (var insurance in context.Item.Insurances)
+                                {
+                                    <MudTooltip Text="@insurance.InsurerName" Class="ml-n5">
+                                        <MudAvatar Color="Color.Info" Variant="Variant.Filled" Size="Size.Small">
+                                            <MudImage Src="@insurance.LogoUrl" Alt="@insurance.InsurerName" />
+                                        </MudAvatar>
+                                    </MudTooltip>
+                                }
+                            }
+                        </MudAvatarGroup>
+                        @if (context.Item.Insurances != null && context.Item.Insurances.Any())
+                        {
+                            <MudText Typo="Typo.caption">
+                                (@context.Item.Insurances.Count asignadas)
+                            </MudText>
+                        }
+                    </MudStack>
+                    
                 </CellTemplate>
-            </PropertyColumn>
+            </TemplateColumn>
             @* Acciones *@
             <TemplateColumn Title="Acciones"
                             HeaderStyle="@_HeaderStyle"
+                            HeaderClass="d-flex justify-center"
                             Sortable="false"
                             CellStyle="width:130px;">
                 <CellTemplate>
                     <div class="d-flex align-center" style="gap:2px;">
+                        <MudTooltip Text="Ver">
+                            <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye"
+                                           Color="Color.Info"
+                                           Size="Size.Small"
+                                           OnClick="@(() => EditarTipo(context.Item))" />
+                        </MudTooltip>
                         <MudTooltip Text="Editar">
                             <MudIconButton Icon="@Icons.Material.Filled.EditNote"
                                            Color="Color.Info"
@@ -181,6 +205,7 @@
 
     private MudDataGrid<UsuarioDto>? grid;
     private CancellationTokenSource? _cts;
+    
 
     void NuevoCentro() { }
 

@@ -13,10 +13,13 @@ public class UsuarioDto
     public string? phoneNumber { get; set; }
     public DateTime? dateOfBirth {  get; set; }
     public string? photoUrl { get; set; }
-    public Guid? insurerId { get; set; }
-    public string? insurerName { get; set; }
     public bool emailConfirmed { get; set; }
+    public string? Address { get; set; }
     public bool isLockedOut { get; set; }
+    public DateTime createAt { get; set; }
+    public Guid? familyGroupId { get; set; }
+    public string? familyGroupName { get; set; }
+    public List<UserInsuranceDto>? Insurances { get; set; }
 
 
 }
